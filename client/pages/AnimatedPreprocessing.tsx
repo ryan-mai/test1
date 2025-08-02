@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Timeline } from "@/components/timeline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,7 @@ export default function AnimatedPreprocessing() {
   const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<number>(0);
   
   const [processingOptions, setProcessingOptions] = useState({
     applyFilter: true,
@@ -51,10 +52,82 @@ export default function AnimatedPreprocessing() {
     title?: string;
     artist?: string;
     youtubeUrl?: string;
+    album?: string;
+    bpm?: number;
+    imageUrl?: string;
   }>({});
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
+  const processSectionRef = useRef<HTMLDivElement>(null);
+  const resultsSectionRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll helper function
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionIndex: number) => {
+    if (ref.current) {
+      // Update active section first to ensure timeline progress updates
+      setActiveSection(sectionIndex);
+      
+      // Give a short delay to allow the timeline animation to start
+      setTimeout(() => {
+        ref.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
+  };
+  
+  // Setup scroll observation
+  useEffect(() => {
+    // Function to determine which section is most visible
+    const determineActiveSection = () => {
+      if (!uploadSectionRef.current || !processSectionRef.current || !resultsSectionRef.current) return;
+      
+      const viewportHeight = window.innerHeight;
+      const scrollPosition = window.scrollY;
+      
+      // Get the positions of each section relative to the viewport
+      const uploadRect = uploadSectionRef.current.getBoundingClientRect();
+      const processRect = processSectionRef.current.getBoundingClientRect();
+      const resultsRect = resultsSectionRef.current.getBoundingClientRect();
+      
+      // Calculate the position of each section relative to the top of the viewport (as percentage)
+      // A negative value means the section is above the viewport
+      // A value between 0 and 1 means the section is partially visible
+      // A value > 1 means the section is below the viewport
+      const getRelativePosition = (rect: DOMRect) => {
+        const topRelative = rect.top / viewportHeight;
+        return topRelative;
+      };
+      
+      const uploadPos = getRelativePosition(uploadRect);
+      const processPos = getRelativePosition(processRect);
+      const resultsPos = getRelativePosition(resultsRect);
+      
+      // Determine which section is most centered in the viewport
+      // Prioritize sections that are visible or just above the viewport
+      if (uploadPos <= 0.3 && processPos >= 0.3) {
+        // Upload section is visible or just above
+        setActiveSection(0);
+      } else if (processPos <= 0.3 && resultsPos >= 0.3) {
+        // Process section is visible or just above
+        setActiveSection(1);
+      } else if (resultsPos <= 0.3) {
+        // Results section is visible or just above
+        setActiveSection(2);
+      }
+    };
+    
+    // Call once on mount and then on scroll
+    determineActiveSection();
+    window.addEventListener('scroll', determineActiveSection);
+    
+    return () => {
+      window.removeEventListener('scroll', determineActiveSection);
+    };
+  }, []);
   
   // File input handling
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,6 +156,21 @@ export default function AnimatedPreprocessing() {
     setTimeout(() => {
       setUploadStatus("success");
       setStatusMessage("File uploaded successfully. You can now proceed to preprocessing.");
+      
+      // Auto-scroll to Process section after successful upload
+      // Use a longer delay to ensure UI updates complete first
+      setTimeout(() => {
+        // Update the active section first to trigger timeline animation
+        setActiveSection(1);
+        
+        // Then scroll after a short delay to allow animation to start
+        setTimeout(() => {
+          processSectionRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
+      }, 1000);
     }, 2000);
   };
   
@@ -105,21 +193,78 @@ export default function AnimatedPreprocessing() {
     setSongResult("");
     setSongDetails({});
     
-    // Simulate preprocessing delay
-    setTimeout(async () => {
-      // Simulate successful processing
-      setUploadStatus("success");
-      setStatusMessage("EEG data processed successfully!");
+    try {
+      // Process EEG data and calculate BPM from band powers
+      // First, simulate EEG processing
+      setStatusMessage("Processing EEG data and calculating band powers...");
       
-      // Simulate generating a song recommendation
-      setBpm(128);
-      setSongResult("Based on your brain activity, we recommend relaxing music with alpha wave entrainment.");
-      setSongDetails({
-        title: "Weightless",
-        artist: "Marconi Union",
-        youtubeUrl: "https://www.youtube.com/watch?v=UfcAVejslrU",
+      // In a real implementation, you would extract these band powers from the uploaded EEG file
+      // For now, we'll use the existing simulated data but treat it as "processed"
+      setUploadStatus("success");
+      setStatusMessage("EEG data processed successfully! Fetching song recommendation...");
+      
+      // Calculate BPM from band powers
+      const calculatedBpm = Math.round(
+        60 + // base BPM
+        ((0.1 * bandPowers.delta + 
+          0.2 * bandPowers.theta + 
+          0.3 * bandPowers.alpha + 
+          0.3 * bandPowers.beta + 
+          0.1 * bandPowers.gamma) / 
+        (0.1 + 0.2 + 0.3 + 0.3 + 0.1) / 100) * 120
+      );
+      
+      setBpm(calculatedBpm);
+      
+      // Call the Gemini API through our Python backend
+      const response = await fetch('/api/recommend-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bpm: calculatedBpm }),
       });
-    }, 3000);
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const songData = await response.json();
+      
+      if (songData.error) {
+        throw new Error(songData.error);
+      }
+      
+      // Update UI with real song recommendation
+      setSongResult(`Based on your brain activity (${calculatedBpm} BPM), we found this song for you.`);
+      setSongDetails({
+        title: songData.songDetails?.title || "Unknown Song",
+        artist: songData.songDetails?.artist || "Unknown Artist",
+        album: songData.songDetails?.album,
+        bpm: songData.songDetails?.bpm,
+        youtubeUrl: songData.songDetails?.youtubeUrl,
+        imageUrl: songData.songDetails?.imageUrl,
+      });
+      
+      // Auto-scroll to Results section after successful processing
+      setTimeout(() => {
+        // Update the active section first to trigger timeline animation
+        setActiveSection(2);
+        
+        // Then scroll after a short delay to allow animation to start
+        setTimeout(() => {
+          resultsSectionRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error processing EEG data:', error);
+      setUploadStatus("error");
+      setStatusMessage(`Error: ${error instanceof Error ? error.message : 'Failed to process EEG data'}`);
+    }
   };
   
   // Render status alert
@@ -162,12 +307,13 @@ export default function AnimatedPreprocessing() {
     {
       title: "Upload",
       content: (
-        <div>
+        <div ref={uploadSectionRef}>
           <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
             Select and upload your EEG data files for preprocessing and analysis.
           </p>
 
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer mb-4" 
+          <div 
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-black/2 transition-colors cursor-pointer mb-4"
             onClick={() => fileInputRef.current?.click()}>
             <FileUp className="h-10 w-10 text-gray-400 mx-auto mb-4" />
             <p className="text-lg font-medium">Drag and drop your file here</p>
@@ -229,13 +375,25 @@ export default function AnimatedPreprocessing() {
               )}
             </Button>
           </div>
+          
+          {uploadStatus === "success" && (
+            <div className="mt-8 flex justify-center">
+              <Button 
+                variant="outline"
+                onClick={() => scrollToSection(processSectionRef, 1)}
+                className="flex items-center gap-2"
+              >
+                Continue to Processing <ArrowDown className="h-4 w-4 rotate-90" />
+              </Button>
+            </div>
+          )}
         </div>
       ),
     },
     {
       title: "Process",
       content: (
-        <div>
+        <div ref={processSectionRef}>
           <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
             Configure preprocessing parameters for your EEG data to extract meaningful brainwave patterns.
           </p>
@@ -316,7 +474,14 @@ export default function AnimatedPreprocessing() {
 
           {renderStatusAlert()}
 
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-between mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => scrollToSection(uploadSectionRef, 0)}
+              className="flex items-center gap-2"
+            >
+              <ArrowDown className="h-4 w-4 -rotate-90" /> Back to Upload
+            </Button>
             <Button onClick={handleStartPreprocessing} disabled={uploadStatus === "loading"}>
               {uploadStatus === "loading" ? (
                 <>
@@ -331,13 +496,25 @@ export default function AnimatedPreprocessing() {
               )}
             </Button>
           </div>
+          
+          {uploadStatus === "success" && bpm && (
+            <div className="mt-8 flex justify-center">
+              <Button 
+                variant="outline"
+                onClick={() => scrollToSection(resultsSectionRef, 2)}
+                className="flex items-center gap-2"
+              >
+                View Results <ArrowDown className="h-4 w-4 rotate-90" />
+              </Button>
+            </div>
+          )}
         </div>
       ),
     },
     {
       title: "Results",
       content: (
-        <div>
+        <div ref={resultsSectionRef}>
           <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
             View your brain activity patterns and personalized music recommendations based on your EEG data.
           </p>
@@ -387,43 +564,61 @@ export default function AnimatedPreprocessing() {
 
                 {songDetails.title && (
                   <div className="mt-4 border rounded-lg p-4 bg-muted/30">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Music className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium">{songDetails.title}</p>
-                        <p className="text-sm text-muted-foreground">{songDetails.artist}</p>
+                    <div className="flex flex-col md:flex-row gap-4">
+                      {songDetails.imageUrl && (
+                        <div className="w-full md:w-1/3">
+                          <img 
+                            src={songDetails.imageUrl} 
+                            alt={`${songDetails.title} album cover`} 
+                            className="w-full h-auto rounded-md"
+                          />
+                        </div>
+                      )}
+                      <div className="w-full md:w-2/3">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Music className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-medium">{songDetails.title}</p>
+                            <p className="text-sm text-muted-foreground">{songDetails.artist}</p>
+                          </div>
+                        </div>
+                        
+                        {songDetails.album && (
+                          <p className="text-sm mb-1">
+                            <span className="text-muted-foreground">Album:</span> {songDetails.album}
+                          </p>
+                        )}
+                        
+                        {songDetails.bpm && (
+                          <p className="text-sm mb-3">
+                            <span className="text-muted-foreground">BPM:</span> {songDetails.bpm}
+                          </p>
+                        )}
+                        
+                        {songDetails.youtubeUrl && (
+                          <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
+                            <a href={songDetails.youtubeUrl} target="_blank" rel="noopener noreferrer">
+                              <Youtube className="h-4 w-4 mr-2" />
+                              Listen on YouTube
+                            </a>
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    
-                    {songDetails.youtubeUrl && (
-                      <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
-                        <a href={songDetails.youtubeUrl} target="_blank" rel="noopener noreferrer">
-                          <Youtube className="h-4 w-4 mr-2" />
-                          Listen on YouTube
-                        </a>
-                      </Button>
-                    )}
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <img
-              src="https://assets.aceternity.com/templates/startup-1.webp"
-              alt="EEG waveform visualization"
-              width={500}
-              height={500}
-              className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
-            />
-            <img
-              src="https://assets.aceternity.com/templates/startup-2.webp"
-              alt="Brain activity map"
-              width={500}
-              height={500}
-              className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
-            />
+          <div className="mt-8 flex justify-start">
+            <Button 
+              variant="outline"
+              onClick={() => scrollToSection(processSectionRef, 1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowDown className="h-4 w-4 -rotate-90" /> Back to Processing
+            </Button>
           </div>
         </div>
       ),
@@ -432,13 +627,13 @@ export default function AnimatedPreprocessing() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
-      <Navbar>
+      {/* Header - Resizable Navbar, sticky to top */}
+      <Navbar className="sticky top-0 z-40 mt-8">
         {/* Desktop Navigation */}
         <NavBody>
           <NavbarLogo />
           <NavItems 
-            items={[
+            items={[ 
               { name: "Music", link: "/music-recommendation" },
               { name: "Mental State", link: "/mental-state" },
               { name: "Library", link: "/library" },
@@ -446,11 +641,8 @@ export default function AnimatedPreprocessing() {
             ]} 
           />
           <div className="relative z-20 flex items-center gap-4">
-            <NavbarButton variant="secondary" as="a" href="/login">
-              Log in
-            </NavbarButton>
             <NavbarButton variant="primary" as="a" href="/login">
-              Sign up
+              Log in
             </NavbarButton>
           </div>
         </NavBody>
@@ -504,7 +696,7 @@ export default function AnimatedPreprocessing() {
                 href="/login"
                 className="w-full"
               >
-                Sign up
+                Log in
               </NavbarButton>
             </div>
           </MobileNavMenu>
@@ -513,18 +705,6 @@ export default function AnimatedPreprocessing() {
 
       {/* Main Content */}
       <div className="container py-8 md:py-12 space-y-8 flex-1">
-        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
-          <div className="flex items-center gap-2">
-            <Brain className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl">
-              EEG Preprocessing
-            </h1>
-          </div>
-          <p className="max-w-[36rem] text-muted-foreground md:text-xl">
-            Upload, visualize, and preprocess raw EEG signals to extract brainwave bands for analysis.
-          </p>
-        </div>
-
         {/* Timeline Component */}
         <div className="relative w-full overflow-clip">
           <Timeline data={timelineData} />

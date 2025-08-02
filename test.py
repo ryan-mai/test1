@@ -28,7 +28,7 @@ def generate(bpm):
         types.Content(
             role="user",
             parts=[
-                types.Part.from_text(text=f"""Find a mainstream, popular, hip song with BPM greater than or equal to {bpm} (prefer exact {bpm} BPM if possible, but do not return any song with BPM below {bpm}). Respond with this exact format only: 'Song: [title]\nArtist: [artist]\nAlbum: [album name]\nBPM: [bpm]\nImage: [direct URL to album cover image]\nYouTube: [YouTube link]'"""),
+                types.Part.from_text(text=f"""Find a mainstream, popular, hip hop, tiktok, trendy, song. DO NOT Output a song with no song or artist The song MUST have a BPM lower than or equal to {bpm} (prefer exact {bpm} BPM if possible, but do not return any song with BPM above {bpm}). Respond with this exact format only: 'Song: [title]\nArtist: [artist]\nAlbum: [album name]\nBPM: [bpm]\nImage: [direct URL to album cover image]\nYouTube: [YouTube link]'"""),
             ],
         ),
     ]

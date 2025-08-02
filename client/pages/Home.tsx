@@ -26,13 +26,13 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
-      <Navbar>
+      {/* Header - Resizable Navbar, sticky to top */}
+      <Navbar className="sticky top-0 z-40 mt-8">
         {/* Desktop Navigation */}
         <NavBody>
           <NavbarLogo />
           <NavItems 
-            items={[
+            items={[ 
               { name: "Music", link: "/music-recommendation" },
               { name: "Mental State", link: "/mental-state" },
               { name: "Library", link: "/library" },
@@ -40,11 +40,8 @@ export default function Home() {
             ]} 
           />
           <div className="relative z-20 flex items-center gap-4">
-            <NavbarButton variant="secondary" as={Link} href="/login">
+            <NavbarButton variant="primary" as="a" href="/login">
               Log in
-            </NavbarButton>
-            <NavbarButton variant="primary" as={Link} href="/login">
-              Sign up
             </NavbarButton>
           </div>
         </NavBody>
@@ -52,10 +49,10 @@ export default function Home() {
         {/* Mobile Navigation */}
         <MobileNav>
           <MobileNavHeader>
-            <Link to="/" className="flex items-center space-x-2">
-              <Lightbulb className="h-6 w-6" />
+            <a href="/" className="flex items-center space-x-2">
+              <Brain className="h-6 w-6" />
               <span className="font-bold">Legoat</span>
-            </Link>
+            </a>
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -72,20 +69,20 @@ export default function Home() {
               { name: "Library", link: "/library" },
               { name: "About", link: "/about" }
             ].map((item, idx) => (
-              <Link
+              <a
                 key={`mobile-link-${idx}`}
-                to={item.link}
+                href={item.link}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="relative text-neutral-600 dark:text-neutral-300"
               >
                 <span className="block">{item.name}</span>
-              </Link>
+              </a>
             ))}
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="secondary"
-                as={Link}
+                as="a"
                 href="/login"
                 className="w-full"
               >
@@ -94,16 +91,17 @@ export default function Home() {
               <NavbarButton
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
-                as={Link}
+                as="a"
                 href="/login"
                 className="w-full"
               >
-                Sign up
+                Log in
               </NavbarButton>
             </div>
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
+
 
       {/* Hero Section */}
       <section className="container py-12 md:py-24 lg:py-32 space-y-8">
@@ -111,7 +109,7 @@ export default function Home() {
           <div className="mb-4 w-full flex justify-center">
           </div>
           <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-5xl lg:text-6xl lg:leading-[1.1]">
-            Connect Your Mind to Music
+            Synthesizing Stress with Harmony
           </h1>
           <p className="max-w-[36rem] text-muted-foreground md:text-xl">
             Transform your brain waves into personalized music recommendations.

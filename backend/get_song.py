@@ -4,8 +4,8 @@ import os
 from google import genai
 from google.genai import types
 
-def generate_genre(bpm, wave_data):
-    # Load .env
+def generate_song(bpm, genre):
+    # Load .env if present
     try:
         from dotenv import load_dotenv
         load_dotenv('.env')
@@ -13,6 +13,7 @@ def generate_genre(bpm, wave_data):
         pass
     
     api_key = "AIzaSyCQySRJoHbyT9oP02Xes1fFa-nIdr6rr3s"
+    
     if not api_key:
         print(json.dumps({"error": "No Gemini API key provided"}))
         return
@@ -24,17 +25,23 @@ def generate_genre(bpm, wave_data):
     contents = [
         types.Content(
             role="user",
-            parts=[
+            parts=[ 
                 types.Part.from_text(text=f"""
-                Based on mainstream music trends, suggest the single best-fitting genre for a song 
-                with a BPM of {bpm} and the following brainwave metrics:
-                
-                Calmness score: {wave_data["calmness_score"]}
+                Based on mainstream music trends, recommend ONE specific popular song 
+                that matches:
+                - BPM: {bpm}
+                - Genre: {genre}
 
-                Only respond with the genre name (e.g., "Lo-fi", "R&B", "EDM", "Pop Rock").
-                Do NOT return song titles or artists. 
-                Your response should be only the genre name, nothing else.
+                Respond in this **exact JSON format** only:
+                {{
+                  "title": "[Song Title]",
+                  "artist": "[Artist Name]",
+                  "album": "[Album Name]",
+                  "bpm": {bpm},
+                  "genre": "{genre}"
+                }}
 
+                Do NOT include any explanations or extra text. Output only valid JSON.
                 """),
             ],
         ),
@@ -49,11 +56,8 @@ def generate_genre(bpm, wave_data):
             if chunk.text:
                 response_text += chunk.text.strip()
         
-        return json.dumps({
-            "genre": response_text,
-            "wave_data": wave_data
-        })
+        # Return Gemini's JSON response directly
+        return response_text
     
     except Exception as e:
         return json.dumps({"bpm": bpm, "error": str(e)})
-

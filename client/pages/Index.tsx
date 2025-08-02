@@ -1,7 +1,9 @@
 import { ChevronLeft, ChevronRight, MoreHorizontal, SlidersHorizontal } from "lucide-react";
 import { NowPlayingBar } from "../components/NowPlayingBar";
+import { useNavigate } from "react-router-dom";
 
 const MusicStreamingHome = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-music-bg-primary text-music-text-primary pb-20">
       {/* Navigation Header */}
@@ -18,9 +20,13 @@ const MusicStreamingHome = () => {
             <div className="inline-flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg bg-white/5 text-music-text-primary text-sm tracking-wide whitespace-nowrap">
               Podcasts
             </div>
-            <div className="inline-flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg bg-white/5 text-music-text-primary text-sm tracking-wide whitespace-nowrap">
-              Audiobooks
-            </div>
+            <button
+              className="inline-flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg bg-white/5 text-music-text-primary text-sm tracking-wide whitespace-nowrap hover:bg-white/10 transition-colors"
+              onClick={() => navigate('/login')}
+              type="button"
+            >
+              Login
+            </button>
           </div>
           
           {/* Settings Button */}

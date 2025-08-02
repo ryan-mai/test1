@@ -20,6 +20,7 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/resizable-navbar";
+import api from "@/api";
 
 export default function AnimatedPreprocessing() {
   // State
@@ -28,14 +29,14 @@ export default function AnimatedPreprocessing() {
   const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  
+
   const [processingOptions, setProcessingOptions] = useState({
     applyFilter: true,
     removeArtifacts: true,
     filterFrequency: [0.5, 45],
     sampleRate: 250,
   });
-  
+
   // Simulated EEG band data (replace with real calculation after processing)
   const [bandPowers, setBandPowers] = useState({
     delta: 32,
@@ -44,49 +45,57 @@ export default function AnimatedPreprocessing() {
     beta: 25,
     gamma: 8,
   });
-  
-  const [bpm, setBpm] = useState<number|null>(null);
+
+  const [bpm, setBpm] = useState<number | null>(null);
   const [songResult, setSongResult] = useState<string>("");
   const [songDetails, setSongDetails] = useState<{
     title?: string;
     artist?: string;
     youtubeUrl?: string;
   }>({});
-  
+
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // File input handling
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-    
+
     setFile(selectedFile);
     setFileDetails({
       name: selectedFile.name,
       size: `${(selectedFile.size / 1024).toFixed(2)} KB`,
       status: 'Ready to upload'
     });
-    
+
     setUploadStatus("idle");
     setStatusMessage("");
   };
-  
+
   // Handle file upload action
-  const handleUpload = () => {
-    if (!file) return;
-    
-    setUploadStatus("loading");
-    setStatusMessage("Uploading your EEG data...");
-    
-    // Simulate upload process
-    setTimeout(() => {
-      setUploadStatus("success");
-      setStatusMessage("File uploaded successfully. You can now proceed to preprocessing.");
-      console.log("")
-    }, 2000);
-  };
-  
+const handleUpload = async () => {
+  if (!file) return; // safety check
+
+  setUploadStatus("loading");
+  setStatusMessage("Uploading your EEG data...");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const { data } = await api.post("/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    setUploadStatus("success");
+    setStatusMessage(`File uploaded: ${data.filename}`);
+  } catch {
+    setUploadStatus("error");
+    setStatusMessage("Upload failed");
+  }
+};
+
+
   // Reset the form
   const handleReset = () => {
     setFile(null);
@@ -97,7 +106,7 @@ export default function AnimatedPreprocessing() {
       fileInputRef.current.value = '';
     }
   };
-  
+
   // Start preprocessing
   const handleStartPreprocessing = async () => {
     setUploadStatus("loading");
@@ -105,13 +114,13 @@ export default function AnimatedPreprocessing() {
     setBpm(null);
     setSongResult("");
     setSongDetails({});
-    
+
     // Simulate preprocessing delay
     setTimeout(async () => {
       // Simulate successful processing
       setUploadStatus("success");
       setStatusMessage("EEG data processed successfully!");
-      
+
       // Simulate generating a song recommendation
       setBpm(128);
       setSongResult("Based on your brain activity, we recommend relaxing music with alpha wave entrainment.");
@@ -122,11 +131,11 @@ export default function AnimatedPreprocessing() {
       });
     }, 3000);
   };
-  
+
   // Render status alert
   const renderStatusAlert = () => {
     if (uploadStatus === "idle" || !statusMessage) return null;
-    
+
     if (uploadStatus === "error") {
       return (
         <Alert variant="destructive" className="mt-4">
@@ -136,7 +145,7 @@ export default function AnimatedPreprocessing() {
         </Alert>
       );
     }
-    
+
     if (uploadStatus === "success") {
       return (
         <Alert className="mt-4 bg-green-50 border-green-200 text-green-800">
@@ -146,7 +155,7 @@ export default function AnimatedPreprocessing() {
         </Alert>
       );
     }
-    
+
     if (uploadStatus === "loading") {
       return (
         <Alert className="mt-4 bg-blue-50 border-blue-200 text-blue-800">
@@ -168,7 +177,7 @@ export default function AnimatedPreprocessing() {
             Select and upload your EEG data files for preprocessing and analysis.
           </p>
 
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer mb-4" 
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer mb-4"
             onClick={() => fileInputRef.current?.click()}>
             <FileUp className="h-10 w-10 text-gray-400 mx-auto mb-4" />
             <p className="text-lg font-medium">Drag and drop your file here</p>
@@ -176,10 +185,10 @@ export default function AnimatedPreprocessing() {
             <p className="text-xs text-muted-foreground mt-2">
               Supported formats: .edf, .bdf, .gdf, .csv, .txt
             </p>
-            <Input 
+            <Input
               ref={fileInputRef}
-              type="file" 
-              className="hidden" 
+              type="file"
+              className="hidden"
               accept=".edf,.bdf,.gdf,.csv,.txt"
               onChange={handleFileChange}
             />
@@ -212,8 +221,8 @@ export default function AnimatedPreprocessing() {
               <RotateCcw className="h-4 w-4 mr-2" />
               Reset
             </Button>
-            <Button 
-              onClick={handleUpload} 
+            <Button
+              onClick={handleUpload}
               disabled={!file || uploadStatus === "loading"}
               className="w-full md:w-auto"
             >
@@ -249,11 +258,11 @@ export default function AnimatedPreprocessing() {
                   Remove unwanted frequencies
                 </p>
               </div>
-              <Switch 
-                id="apply-filter" 
-                checked={processingOptions.applyFilter} 
-                onCheckedChange={(checked) => 
-                  setProcessingOptions({...processingOptions, applyFilter: checked})
+              <Switch
+                id="apply-filter"
+                checked={processingOptions.applyFilter}
+                onCheckedChange={(checked) =>
+                  setProcessingOptions({ ...processingOptions, applyFilter: checked })
                 }
               />
             </div>
@@ -267,14 +276,14 @@ export default function AnimatedPreprocessing() {
                       {processingOptions.filterFrequency[0]} - {processingOptions.filterFrequency[1]} Hz
                     </span>
                   </div>
-                  <Slider 
+                  <Slider
                     id="filter-frequency"
-                    min={0} 
-                    max={100} 
-                    step={0.5} 
+                    min={0}
+                    max={100}
+                    step={0.5}
                     value={processingOptions.filterFrequency}
-                    onValueChange={(value) => 
-                      setProcessingOptions({...processingOptions, filterFrequency: value as [number, number]})
+                    onValueChange={(value) =>
+                      setProcessingOptions({ ...processingOptions, filterFrequency: value as [number, number] })
                     }
                   />
                 </div>
@@ -288,11 +297,11 @@ export default function AnimatedPreprocessing() {
                   Remove eye blinks, muscle artifacts, and other noise
                 </p>
               </div>
-              <Switch 
-                id="remove-artifacts" 
-                checked={processingOptions.removeArtifacts} 
-                onCheckedChange={(checked) => 
-                  setProcessingOptions({...processingOptions, removeArtifacts: checked})
+              <Switch
+                id="remove-artifacts"
+                checked={processingOptions.removeArtifacts}
+                onCheckedChange={(checked) =>
+                  setProcessingOptions({ ...processingOptions, removeArtifacts: checked })
                 }
               />
             </div>
@@ -302,14 +311,14 @@ export default function AnimatedPreprocessing() {
                 <Label htmlFor="sample-rate">Sample Rate (Hz)</Label>
                 <span className="text-sm">{processingOptions.sampleRate} Hz</span>
               </div>
-              <Slider 
+              <Slider
                 id="sample-rate"
-                min={100} 
-                max={1000} 
-                step={1} 
+                min={100}
+                max={1000}
+                step={1}
                 value={[processingOptions.sampleRate]}
-                onValueChange={(value) => 
-                  setProcessingOptions({...processingOptions, sampleRate: value[0]})
+                onValueChange={(value) =>
+                  setProcessingOptions({ ...processingOptions, sampleRate: value[0] })
                 }
               />
             </div>
@@ -358,7 +367,7 @@ export default function AnimatedPreprocessing() {
                         <span>{power}%</span>
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"
                           style={{ width: `${power}%` }}
                         />
@@ -381,7 +390,7 @@ export default function AnimatedPreprocessing() {
                     <span className="text-sm">Detected tempo: <strong>{bpm} BPM</strong></span>
                   </div>
                 )}
-                
+
                 {songResult && (
                   <p className="text-sm">{songResult}</p>
                 )}
@@ -395,7 +404,7 @@ export default function AnimatedPreprocessing() {
                         <p className="text-sm text-muted-foreground">{songDetails.artist}</p>
                       </div>
                     </div>
-                    
+
                     {songDetails.youtubeUrl && (
                       <Button variant="outline" size="sm" className="mt-2 w-full" asChild>
                         <a href={songDetails.youtubeUrl} target="_blank" rel="noopener noreferrer">
@@ -409,7 +418,7 @@ export default function AnimatedPreprocessing() {
               </CardContent>
             </Card>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <img
               src="https://assets.aceternity.com/templates/startup-1.webp"
@@ -438,13 +447,13 @@ export default function AnimatedPreprocessing() {
         {/* Desktop Navigation */}
         <NavBody>
           <NavbarLogo />
-          <NavItems 
+          <NavItems
             items={[
               { name: "Music", link: "/music-recommendation" },
               { name: "Mental State", link: "/mental-state" },
               { name: "Library", link: "/library" },
               { name: "About", link: "/about" }
-            ]} 
+            ]}
           />
           <div className="relative z-20 flex items-center gap-4">
             <NavbarButton variant="secondary" as="a" href="/login">

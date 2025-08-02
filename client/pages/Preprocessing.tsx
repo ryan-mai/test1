@@ -35,6 +35,15 @@ export default function Preprocessing() {
     filterFrequency: [0.5, 45], // Hz range
     sampleRate: 250, // Hz
   });
+  // Simulated EEG band data (replace with real calculation after processing)
+  const [bandPowers, setBandPowers] = useState({
+    delta: 32,
+    theta: 25,
+    alpha: 18,
+    beta: 25,
+    gamma: 8,
+  });
+  const [bpm, setBpm] = useState<number|null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,15 +108,27 @@ export default function Preprocessing() {
     }
   };
 
-  const handleStartPreprocessing = () => {
+  const handleStartPreprocessing = async () => {
     setUploadStatus("loading");
     setStatusMessage("Processing EEG data...");
-    
-    // Simulate preprocessing
-    setTimeout(() => {
+    setBpm(null);
+    // Simulate preprocessing delay
+    setTimeout(async () => {
       setUploadStatus("success");
       setStatusMessage("EEG data processed successfully");
       setActiveTab("visualize");
+      // Send band data to backend for BPM calculation
+      try {
+        const res = await fetch("/api/calculate-bpm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bandPowers),
+        });
+        const data = await res.json();
+        if (data.bpm) setBpm(data.bpm);
+      } catch (e) {
+        setStatusMessage("EEG processed, but failed to get BPM");
+      }
     }, 3000);
   };
 
@@ -451,27 +472,39 @@ export default function Preprocessing() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm">Delta (0.5-4 Hz)</h3>
                     <p className="text-muted-foreground text-xs">Deep sleep, healing</p>
-                    <p className="text-lg font-bold mt-2">32%</p>
+                    <p className="text-lg font-bold mt-2">{bandPowers.delta}%</p>
                   </Card>
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm">Theta (4-8 Hz)</h3>
                     <p className="text-muted-foreground text-xs">Meditation, creativity</p>
-                    <p className="text-lg font-bold mt-2">25%</p>
+                    <p className="text-lg font-bold mt-2">{bandPowers.theta}%</p>
                   </Card>
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm">Alpha (8-13 Hz)</h3>
                     <p className="text-muted-foreground text-xs">Relaxation, calmness</p>
-                    <p className="text-lg font-bold mt-2">18%</p>
+                    <p className="text-lg font-bold mt-2">{bandPowers.alpha}%</p>
                   </Card>
                   <Card className="p-4">
                     <h3 className="font-semibold text-sm">Beta (13-30 Hz)</h3>
                     <p className="text-muted-foreground text-xs">Focus, alertness</p>
-                    <p className="text-lg font-bold mt-2">25%</p>
+                    <p className="text-lg font-bold mt-2">{bandPowers.beta}%</p>
                   </Card>
+                  <Card className="p-4">
+                    <h3 className="font-semibold text-sm">Gamma (30-100 Hz)</h3>
+                    <p className="text-muted-foreground text-xs">Cognition, information processing</p>
+                    <p className="text-lg font-bold mt-2">{bandPowers.gamma}%</p>
+                  </Card>
+                </div>
+                <div className="mt-8 text-center">
+                  {bpm !== null && (
+                    <div className="inline-block bg-primary text-white rounded-lg px-6 py-4 shadow text-2xl font-bold">
+                      Suggested Song BPM: {bpm}
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">

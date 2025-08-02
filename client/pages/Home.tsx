@@ -6,45 +6,108 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRight, Calendar, Clock, Compass, FileText, Image, Laptop, Lightbulb, MessageSquare, Music, User, Video } from "lucide-react";
 import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { Link } from "react-router-dom";
+import SpotlightCard from "../components/SpotlightCard";
+import {
+  Navbar,
+  NavBody,
+  NavItems,
+  MobileNav,
+  NavbarLogo,
+  NavbarButton,
+  MobileNavHeader,
+  MobileNavToggle,
+  MobileNavMenu,
+} from "@/components/resizable-navbar";
 
 export default function Home() {
   const [email, setEmail] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-6 md:gap-10">
+      <Navbar>
+        {/* Desktop Navigation */}
+        <NavBody>
+          <NavbarLogo>
             <Link to="/" className="flex items-center space-x-2">
               <Lightbulb className="h-6 w-6" />
               <span className="font-bold">Legoat</span>
             </Link>
-            <nav className="hidden gap-6 md:flex">
-              <Link to="/music-recommendation" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Music
-              </Link>
-              <Link to="/mental-state" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Mental State
-              </Link>
-              <Link to="/library" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Library
-              </Link>
-              <Link to="/about" className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                About
-              </Link>
-            </nav>
+          </NavbarLogo>
+          <NavItems 
+            items={[
+              { name: "Music", link: "/music-recommendation" },
+              { name: "Mental State", link: "/mental-state" },
+              { name: "Library", link: "/library" },
+              { name: "About", link: "/about" }
+            ]} 
+          />
+          <div className="relative z-20 flex items-center gap-4">
+            <NavbarButton variant="secondary" as={Link} to="/login">
+              Log in
+            </NavbarButton>
+            <NavbarButton variant="primary" as={Link} to="/login">
+              Sign up
+            </NavbarButton>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/login">Sign up</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+        </NavBody>
+
+        {/* Mobile Navigation */}
+        <MobileNav>
+          <MobileNavHeader>
+            <Link to="/" className="flex items-center space-x-2">
+              <Lightbulb className="h-6 w-6" />
+              <span className="font-bold">Legoat</span>
+            </Link>
+            <MobileNavToggle
+              isOpen={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            />
+          </MobileNavHeader>
+
+          <MobileNavMenu
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+          >
+            {[
+              { name: "Music", link: "/music-recommendation" },
+              { name: "Mental State", link: "/mental-state" },
+              { name: "Library", link: "/library" },
+              { name: "About", link: "/about" }
+            ].map((item, idx) => (
+              <Link
+                key={`mobile-link-${idx}`}
+                to={item.link}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="relative text-neutral-600 dark:text-neutral-300"
+              >
+                <span className="block">{item.name}</span>
+              </Link>
+            ))}
+            <div className="flex w-full flex-col gap-4">
+              <NavbarButton
+                onClick={() => setIsMobileMenuOpen(false)}
+                variant="secondary"
+                as={Link}
+                to="/login"
+                className="w-full"
+              >
+                Log in
+              </NavbarButton>
+              <NavbarButton
+                onClick={() => setIsMobileMenuOpen(false)}
+                variant="primary"
+                as={Link}
+                to="/login"
+                className="w-full"
+              >
+                Sign up
+              </NavbarButton>
+            </div>
+          </MobileNavMenu>
+        </MobileNav>
+      </Navbar>
 
       {/* Hero Section */}
       <section className="container py-12 md:py-24 lg:py-32 space-y-8">
@@ -84,7 +147,7 @@ export default function Home() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card>
+          <SpotlightCard>
             <CardHeader>
               <Compass className="h-6 w-6 mb-2" />
               <CardTitle>Neuro-Music Matching</CardTitle>
@@ -92,8 +155,8 @@ export default function Home() {
                 Our algorithms match your brain activity patterns with music that resonates with your current mental state.
               </CardDescription>
             </CardHeader>
-          </Card>
-          <Card>
+          </SpotlightCard>
+          <SpotlightCard>
             <CardHeader>
               <Brain className="h-6 w-6 mb-2" />
               <CardTitle>Mental State Analysis</CardTitle>
@@ -101,8 +164,8 @@ export default function Home() {
                 Track your mental states over time and see how different music affects your brain activity.
               </CardDescription>
             </CardHeader>
-          </Card>
-          <Card>
+          </SpotlightCard>
+          <SpotlightCard>
             <CardHeader>
               <Music className="h-6 w-6 mb-2" />
               <CardTitle>Personalized Playlists</CardTitle>
@@ -110,7 +173,7 @@ export default function Home() {
                 Get curated playlists based on your unique neural patterns and music preferences.
               </CardDescription>
             </CardHeader>
-          </Card>
+          </SpotlightCard>
         </div>
       </section>
 

@@ -11,7 +11,6 @@ import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/login";
 import Home from "./pages/Home";
 import EEGDataset from "./pages/EEGDataset";
-import Preprocessing from "./pages/Preprocessing";
 import AnimatedPreprocessing from "./pages/AnimatedPreprocessing";
 import MentalState from "./pages/MentalState";
 import AudioRetrieval from "./pages/AudioRetrieval";
@@ -39,7 +38,6 @@ const App = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/home" element={<Home />} />
               <Route path="/eeg-dataset" element={<EEGDataset />} />
-              <Route path="/preprocessing" element={<Preprocessing />} />
               <Route path="/animated-preprocessing" element={<AnimatedPreprocessing />} />
               <Route path="/mental-state" element={<MentalState />} />
             <Route path="/audio-retrieval" element={<AudioRetrieval />} />

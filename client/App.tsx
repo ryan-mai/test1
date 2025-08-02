@@ -12,10 +12,11 @@ import LoginPage from "./pages/login";
 import Home from "./pages/Home";
 import EEGDataset from "./pages/EEGDataset";
 import Preprocessing from "./pages/Preprocessing";
+import AnimatedPreprocessing from "./pages/AnimatedPreprocessing";
 import MentalState from "./pages/MentalState";
 import MusicRecommendation from "./pages/MusicRecommendation";
 import AudioRetrieval from "./pages/AudioRetrieval";
-import Library from "./pages/Library";
+import { TimelineDemo } from "./pages/Library";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import { SongProvider } from "./lib/SongContext";
@@ -38,11 +39,12 @@ const App = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/home" element={<Home />} />
               <Route path="/eeg-dataset" element={<EEGDataset />} />
-            <Route path="/preprocessing" element={<Preprocessing />} />
-            <Route path="/mental-state" element={<MentalState />} />
+              <Route path="/preprocessing" element={<Preprocessing />} />
+              <Route path="/animated-preprocessing" element={<AnimatedPreprocessing />} />
+              <Route path="/mental-state" element={<MentalState />} />
             <Route path="/music-recommendation" element={<MusicRecommendation />} />
             <Route path="/audio-retrieval" element={<AudioRetrieval />} />
-            <Route path="/library" element={<Library />} />
+            <Route path="/library" element={<TimelineDemo />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

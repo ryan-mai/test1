@@ -83,6 +83,7 @@ export default function AnimatedPreprocessing() {
     setTimeout(() => {
       setUploadStatus("success");
       setStatusMessage("File uploaded successfully. You can now proceed to preprocessing.");
+      console.log("")
     }, 2000);
   };
   

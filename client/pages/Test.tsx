@@ -71,35 +71,45 @@ const Test = () => {
       id: 1,
       number: '01',
       color: 'cyan',
-      artists: 'J Balvin, Bad Bunny, Maluma and more',
+      title: 'Home',
+      description: 'Main dashboard and player',
+      path: '/home',
       image: '/placeholder.svg',
     },
     {
       id: 2,
       number: '02',
       color: 'yellow',
-      artists: 'Tyler, The Creator, Taylor Swift, Travis Scott and more',
+      title: 'About',
+      description: 'Learn more about the project',
+      path: '/about',
       image: '/placeholder.svg',
     },
     {
       id: 3,
       number: '03',
       color: 'red',
-      artists: 'Maroon 5, Owl City, Lady Gaga and more',
+      title: 'Preprocessing',
+      description: 'Process and analyze audio data',
+      path: '/preprocessing',
       image: '/placeholder.svg',
     },
     {
       id: 4,
       number: '04',
       color: 'pink',
-      artists: 'ian, Rich Amiri, Yeat and more',
+      title: 'Mental State',
+      description: 'Brain activity visualization',
+      path: '/mental-state',
       image: '/placeholder.svg',
     },
     {
       id: 5,
       number: '05',
       color: 'green',
-      artists: 'Pavel Lyubomudrov, Karoly Botvay, Carin and more',
+      title: 'Login',
+      description: 'Sign in to your account',
+      path: '/login',
       image: '/placeholder.svg',
     },
   ];
@@ -326,21 +336,41 @@ const Test = () => {
           {/* Daily mix cards */}
           {dailyMixes.map((mix) => (
             <div key={mix.id} className="w-1/5">
-              <div className="bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors cursor-pointer">
+              <div 
+                className="bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors cursor-pointer"
+                onClick={() => navigate(mix.path)}
+              >
                 <div className="relative">
                   <img
                     src={mix.image}
                     alt={`Daily Mix ${mix.number}`}
                     className="w-full aspect-square object-cover rounded-md mb-4"
                   />
-                  <div className={`absolute bottom-8 left-2 px-2 py-1 rounded text-sm bg-${mix.color}-400 text-black font-medium`}>
+                  <div 
+                    className={`absolute bottom-8 left-2 px-2 py-1 rounded text-sm text-black font-medium ${
+                      mix.color === 'cyan' ? 'bg-cyan-400' : 
+                      mix.color === 'yellow' ? 'bg-yellow-400' :
+                      mix.color === 'red' ? 'bg-red-400' :
+                      mix.color === 'pink' ? 'bg-pink-400' :
+                      'bg-green-400'
+                    }`}
+                  >
                     Daily Mix
                   </div>
-                  <div className={`absolute bottom-8 right-2 px-3 py-1 rounded text-2xl bg-${mix.color}-400 text-black font-bold`}>
+                  <div 
+                    className={`absolute bottom-8 right-2 px-3 py-1 rounded text-2xl text-black font-bold ${
+                      mix.color === 'cyan' ? 'bg-cyan-400' : 
+                      mix.color === 'yellow' ? 'bg-yellow-400' :
+                      mix.color === 'red' ? 'bg-red-400' :
+                      mix.color === 'pink' ? 'bg-pink-400' :
+                      'bg-green-400'
+                    }`}
+                  >
                     {mix.number}
                   </div>
                 </div>
-                <p className="text-sm text-[#B3B3B3]">{mix.artists}</p>
+                <h3 className="font-bold text-white text-base">{mix.title}</h3>
+                <p className="text-sm text-[#B3B3B3]">{mix.description}</p>
               </div>
             </div>
           ))}

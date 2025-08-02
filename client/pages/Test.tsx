@@ -181,7 +181,6 @@ const Test = () => {
         <div className="flex items-center gap-4 ml-auto">
           <div className="text-[#B3B3B3] hover:text-white cursor-pointer">
           </div>
-          <div className="h-8 w-8 rounded-full bg-gray-500"></div>
         </div>
       </div>
 

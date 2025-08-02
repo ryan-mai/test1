@@ -8,7 +8,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { NowPlayingBar } from "@/components/NowPlayingBar";
-import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube, ArrowDown } from "lucide-react";
+import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
+import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube, ArrowDown, ChevronUp } from "lucide-react";
 import {
   Navbar,
   NavBody,
@@ -36,6 +37,84 @@ export default function AnimatedPreprocessing() {
     filterFrequency: [0.5, 45],
     sampleRate: 250,
   });
+  
+  // Music preferences state
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+  const [customGenre, setCustomGenre] = useState<string>("");
+  const [customYear, setCustomYear] = useState<string>("");
+  const [customArtist, setCustomArtist] = useState<string>("");
+  const [customMood, setCustomMood] = useState<string>("");
+  
+  // Category display state
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  
+  // Handler functions for music preferences
+  const toggleGenre = (genre: string) => {
+    setSelectedGenres(prev => 
+      prev.includes(genre) 
+        ? prev.filter(g => g !== genre) 
+        : [...prev, genre]
+    );
+  };
+  
+  const toggleYear = (year: string) => {
+    setSelectedYears(prev => 
+      prev.includes(year) 
+        ? prev.filter(y => y !== year) 
+        : [...prev, year]
+    );
+  };
+  
+  const toggleArtist = (artist: string) => {
+    setSelectedArtists(prev => 
+      prev.includes(artist) 
+        ? prev.filter(a => a !== artist) 
+        : [...prev, artist]
+    );
+  };
+  
+  const toggleMood = (mood: string) => {
+    setSelectedMoods(prev => 
+      prev.includes(mood) 
+        ? prev.filter(m => m !== mood) 
+        : [...prev, mood]
+    );
+  };
+  
+  const toggleCategory = (category: string) => {
+    setExpandedCategory(prev => prev === category ? null : category);
+  };
+  
+  const addCustomGenre = () => {
+    if (customGenre.trim() && !selectedGenres.includes(customGenre.trim())) {
+      setSelectedGenres(prev => [...prev, customGenre.trim()]);
+      setCustomGenre("");
+    }
+  };
+  
+  const addCustomYear = () => {
+    if (customYear.trim() && !selectedYears.includes(customYear.trim())) {
+      setSelectedYears(prev => [...prev, customYear.trim()]);
+      setCustomYear("");
+    }
+  };
+  
+  const addCustomArtist = () => {
+    if (customArtist.trim() && !selectedArtists.includes(customArtist.trim())) {
+      setSelectedArtists(prev => [...prev, customArtist.trim()]);
+      setCustomArtist("");
+    }
+  };
+  
+  const addCustomMood = () => {
+    if (customMood.trim() && !selectedMoods.includes(customMood.trim())) {
+      setSelectedMoods(prev => [...prev, customMood.trim()]);
+      setCustomMood("");
+    }
+  };
   
   // Simulated EEG band data (replace with real calculation after processing)
   const [bandPowers, setBandPowers] = useState({
@@ -609,6 +688,400 @@ export default function AnimatedPreprocessing() {
                 )}
               </CardContent>
             </Card>
+          </div>
+          
+          {/* Music Preferences Section with Scroll Stack */}
+          <div className="mt-12 mb-8">
+            <h2 className="text-xl font-semibold mb-4">Music Preferences</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Fine-tune your music recommendations by selecting preferences from categories below or add your own.
+            </p>
+            
+            <div className="h-[500px] w-full">
+              <ScrollStack
+                className="bg-[#121212] rounded-xl"
+                itemDistance={30}
+                itemStackDistance={5}
+                baseScale={1.0}
+                rotationAmount={0}
+                blurAmount={0}
+              >
+                {/* Genre Category */}
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#1DB954] to-[#121212] text-white">
+                  <div className="h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold">Genre</h3>
+                        <p className="text-sm text-white/70">Select genres you enjoy</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        className={`rounded-full h-10 w-10 p-0 flex items-center justify-center ${expandedCategory === 'genre' ? 'bg-white text-black' : 'bg-white/10 text-white'}`}
+                        onClick={() => toggleCategory('genre')}
+                      >
+                        {expandedCategory === 'genre' ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5 ml-0.5" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${expandedCategory === 'genre' ? 'block' : 'hidden'}`}>
+                      {["Lofi", "Classical", "Rock", "Rap", "Electronic", "Jazz", "Pop", "Indie"].map((genre) => (
+                        <div 
+                          key={genre}
+                          className={`${selectedGenres.includes(genre) ? 'bg-[#1DB954]/70' : 'bg-[#181818]'} hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer`}
+                          onClick={() => toggleGenre(genre)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#1DB954] flex items-center justify-center">
+                              <Music className="h-4 w-4 text-black" />
+                            </div>
+                            <span className="text-sm font-medium">{genre}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {selectedGenres.filter(genre => !["Lofi", "Classical", "Rock", "Rap", "Electronic", "Jazz", "Pop", "Indie"].includes(genre)).map((genre) => (
+                        <div 
+                          key={genre}
+                          className="bg-[#1DB954]/70 hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer"
+                          onClick={() => toggleGenre(genre)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#1DB954] flex items-center justify-center">
+                              <Music className="h-4 w-4 text-black" />
+                            </div>
+                            <span className="text-sm font-medium">{genre}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="bg-[#181818] hover:bg-[#282828] transition-colors rounded-md p-3">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+                            onClick={addCustomGenre}
+                          >
+                            <span className="text-lg font-bold text-white">+</span>
+                          </div>
+                          <Input 
+                            placeholder="Add custom genre..." 
+                            className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
+                            value={customGenre}
+                            onChange={(e) => setCustomGenre(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCustomGenre()}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {selectedGenres.length > 0 && expandedCategory !== 'genre' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {selectedGenres.slice(0, 3).map(genre => (
+                          <div key={genre} className="bg-[#1DB954] text-white text-sm px-3 py-1 rounded-full">
+                            {genre}
+                          </div>
+                        ))}
+                        {selectedGenres.length > 3 && (
+                          <div className="bg-white/10 text-white text-sm px-3 py-1 rounded-full">
+                            +{selectedGenres.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </ScrollStackItem>
+                
+                {/* Decade/Year Category */}
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#450CF5] to-[#121212] text-white">
+                  <div className="h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold">Decade/Year</h3>
+                        <p className="text-sm text-white/70">Music from your favorite era</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        className={`rounded-full h-10 w-10 p-0 flex items-center justify-center ${expandedCategory === 'year' ? 'bg-white text-black' : 'bg-white/10 text-white'}`}
+                        onClick={() => toggleCategory('year')}
+                      >
+                        {expandedCategory === 'year' ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5 ml-0.5" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${expandedCategory === 'year' ? 'block' : 'hidden'}`}>
+                      {["2020s", "2010s", "2000s", "1990s", "1980s", "1970s", "Today's Hits", "Trending"].map((year) => (
+                        <div 
+                          key={year}
+                          className={`${selectedYears.includes(year) ? 'bg-[#450CF5]/70' : 'bg-[#181818]'} hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer`}
+                          onClick={() => toggleYear(year)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#450CF5] flex items-center justify-center">
+                              <BarChart4 className="h-4 w-4 text-black" />
+                            </div>
+                            <span className="text-sm font-medium">{year}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {selectedYears.filter(year => !["2020s", "2010s", "2000s", "1990s", "1980s", "1970s", "Today's Hits", "Trending"].includes(year)).map((year) => (
+                        <div 
+                          key={year}
+                          className="bg-[#450CF5]/70 hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer"
+                          onClick={() => toggleYear(year)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#450CF5] flex items-center justify-center">
+                              <BarChart4 className="h-4 w-4 text-black" />
+                            </div>
+                            <span className="text-sm font-medium">{year}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="bg-[#181818] hover:bg-[#282828] transition-colors rounded-md p-3">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+                            onClick={addCustomYear}
+                          >
+                            <span className="text-lg font-bold text-white">+</span>
+                          </div>
+                          <Input 
+                            placeholder="Add custom year..." 
+                            className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
+                            value={customYear}
+                            onChange={(e) => setCustomYear(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCustomYear()}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {selectedYears.length > 0 && expandedCategory !== 'year' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {selectedYears.slice(0, 3).map(year => (
+                          <div key={year} className="bg-[#450CF5] text-white text-sm px-3 py-1 rounded-full">
+                            {year}
+                          </div>
+                        ))}
+                        {selectedYears.length > 3 && (
+                          <div className="bg-white/10 text-white text-sm px-3 py-1 rounded-full">
+                            +{selectedYears.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </ScrollStackItem>
+                
+                {/* Artists Category */}
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#E4128B] to-[#121212] text-white">
+                  <div className="h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold">Artists</h3>
+                        <p className="text-sm text-white/70">Your favorite musicians</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        className={`rounded-full h-10 w-10 p-0 flex items-center justify-center ${expandedCategory === 'artist' ? 'bg-white text-black' : 'bg-white/10 text-white'}`}
+                        onClick={() => toggleCategory('artist')}
+                      >
+                        {expandedCategory === 'artist' ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5 ml-0.5" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${expandedCategory === 'artist' ? 'block' : 'hidden'}`}>
+                      {["Taylor Swift", "Drake", "The Weeknd", "Bad Bunny", "Billie Eilish", "BTS", "Dua Lipa", "Post Malone"].map((artist) => (
+                        <div 
+                          key={artist}
+                          className={`${selectedArtists.includes(artist) ? 'bg-[#E4128B]/70' : 'bg-[#181818]'} hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer`}
+                          onClick={() => toggleArtist(artist)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#E4128B] flex items-center justify-center text-xs font-bold text-black">
+                              {artist.split(' ').map(word => word[0]).join('')}
+                            </div>
+                            <span className="text-sm font-medium truncate">{artist}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {selectedArtists.filter(artist => !["Taylor Swift", "Drake", "The Weeknd", "Bad Bunny", "Billie Eilish", "BTS", "Dua Lipa", "Post Malone"].includes(artist)).map((artist) => (
+                        <div 
+                          key={artist}
+                          className="bg-[#E4128B]/70 hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer"
+                          onClick={() => toggleArtist(artist)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#E4128B] flex items-center justify-center text-xs font-bold text-black">
+                              {artist.split(' ').map(word => word[0]).join('')}
+                            </div>
+                            <span className="text-sm font-medium truncate">{artist}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="bg-[#181818] hover:bg-[#282828] transition-colors rounded-md p-3">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+                            onClick={addCustomArtist}
+                          >
+                            <span className="text-lg font-bold text-white">+</span>
+                          </div>
+                          <Input 
+                            placeholder="Add artist..." 
+                            className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
+                            value={customArtist}
+                            onChange={(e) => setCustomArtist(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCustomArtist()}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {selectedArtists.length > 0 && expandedCategory !== 'artist' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {selectedArtists.slice(0, 3).map(artist => (
+                          <div key={artist} className="bg-[#E4128B] text-white text-sm px-3 py-1 rounded-full">
+                            {artist}
+                          </div>
+                        ))}
+                        {selectedArtists.length > 3 && (
+                          <div className="bg-white/10 text-white text-sm px-3 py-1 rounded-full">
+                            +{selectedArtists.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </ScrollStackItem>
+                
+                {/* Mood Category */}
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#FF9500] to-[#121212] text-white">
+                  <div className="h-full">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold">Mood</h3>
+                        <p className="text-sm text-white/70">Music for every emotion</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        className={`rounded-full h-10 w-10 p-0 flex items-center justify-center ${expandedCategory === 'mood' ? 'bg-white text-black' : 'bg-white/10 text-white'}`}
+                        onClick={() => toggleCategory('mood')}
+                      >
+                        {expandedCategory === 'mood' ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5 ml-0.5" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${expandedCategory === 'mood' ? 'block' : 'hidden'}`}>
+                      {["Energetic", "Relaxed", "Happy", "Sad", "Focus", "Workout", "Party", "Chill"].map((mood) => (
+                        <div 
+                          key={mood}
+                          className={`${selectedMoods.includes(mood) ? 'bg-[#FF9500]/70' : 'bg-[#181818]'} hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer`}
+                          onClick={() => toggleMood(mood)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#FF9500] flex items-center justify-center">
+                              <span className="text-xs font-bold text-black">{mood.substring(0, 2)}</span>
+                            </div>
+                            <span className="text-sm font-medium">{mood}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {selectedMoods.filter(mood => !["Energetic", "Relaxed", "Happy", "Sad", "Focus", "Workout", "Party", "Chill"].includes(mood)).map((mood) => (
+                        <div 
+                          key={mood}
+                          className="bg-[#FF9500]/70 hover:bg-[#282828] transition-colors rounded-md p-3 cursor-pointer"
+                          onClick={() => toggleMood(mood)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#FF9500] flex items-center justify-center">
+                              <span className="text-xs font-bold text-black">{mood.substring(0, 2)}</span>
+                            </div>
+                            <span className="text-sm font-medium">{mood}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="bg-[#181818] hover:bg-[#282828] transition-colors rounded-md p-3">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+                            onClick={addCustomMood}
+                          >
+                            <span className="text-lg font-bold text-white">+</span>
+                          </div>
+                          <Input 
+                            placeholder="Add custom mood..." 
+                            className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
+                            value={customMood}
+                            onChange={(e) => setCustomMood(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCustomMood()}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {selectedMoods.length > 0 && expandedCategory !== 'mood' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {selectedMoods.slice(0, 3).map(mood => (
+                          <div key={mood} className="bg-[#FF9500] text-white text-sm px-3 py-1 rounded-full">
+                            {mood}
+                          </div>
+                        ))}
+                        {selectedMoods.length > 3 && (
+                          <div className="bg-white/10 text-white text-sm px-3 py-1 rounded-full">
+                            +{selectedMoods.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </ScrollStackItem>
+              </ScrollStack>
+            </div>
+            
+            {/* Apply Preferences Button */}
+            {(selectedGenres.length > 0 || selectedYears.length > 0 || selectedArtists.length > 0 || selectedMoods.length > 0) && (
+              <div className="mt-4 flex justify-center">
+                <Button 
+                  className="bg-[#1DB954] hover:bg-[#1DB954]/80 text-black"
+                  onClick={() => {
+                    // This would call the API with user preferences to update recommendations
+                    setStatusMessage("Updating recommendations based on your preferences...");
+                    setUploadStatus("loading");
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                      setUploadStatus("success");
+                      setStatusMessage("Recommendations updated based on your preferences!");
+                      setSongResult(`Based on your brain activity (${bpm} BPM) and preferences, we found this song for you.`);
+                    }, 1500);
+                  }}
+                >
+                  Apply Preferences
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="mt-8 flex justify-start">

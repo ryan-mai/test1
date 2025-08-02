@@ -18,6 +18,7 @@ import AudioRetrieval from "./pages/AudioRetrieval";
 import Library from "./pages/Library";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import { SongProvider } from "./lib/SongContext";
 
 const queryClient = new QueryClient();
 
@@ -28,14 +29,15 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/eeg-dataset" element={<EEGDataset />} />
+        <SongProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/eeg-dataset" element={<EEGDataset />} />
             <Route path="/preprocessing" element={<Preprocessing />} />
             <Route path="/mental-state" element={<MentalState />} />
             <Route path="/music-recommendation" element={<MusicRecommendation />} />
@@ -47,6 +49,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </SongProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

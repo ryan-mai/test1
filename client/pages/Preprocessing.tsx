@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { NowPlayingBar } from "@/components/NowPlayingBar";
-import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4 } from "lucide-react";
+import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube } from "lucide-react";
 import {
   Navbar,
   NavBody,
@@ -44,6 +44,12 @@ export default function Preprocessing() {
     gamma: 8,
   });
   const [bpm, setBpm] = useState<number|null>(null);
+  const [songResult, setSongResult] = useState<string>("");
+  const [songDetails, setSongDetails] = useState<{
+    title?: string;
+    artist?: string;
+    youtubeUrl?: string;
+  }>({});
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -112,6 +118,8 @@ export default function Preprocessing() {
     setUploadStatus("loading");
     setStatusMessage("Processing EEG data...");
     setBpm(null);
+    setSongResult("");
+    setSongDetails({});
     // Simulate preprocessing delay
     setTimeout(async () => {
       setUploadStatus("success");
@@ -125,9 +133,40 @@ export default function Preprocessing() {
           body: JSON.stringify(bandPowers),
         });
         const data = await res.json();
+        console.log("Gemini API response:", data); // Debug log
         if (data.bpm) setBpm(data.bpm);
+        if (data.result) {
+          setSongResult(data.result);
+          // Parse song details from structured response
+          const songInfo: {
+            title?: string;
+            artist?: string;
+            youtubeUrl?: string;
+          } = {};
+          // Extract song title
+          const titleMatch = data.result.match(/Song:\s*(.+?)(?:\n|$)/);
+          if (titleMatch && titleMatch[1]) {
+            songInfo.title = titleMatch[1].trim();
+          }
+          // Extract artist
+          const artistMatch = data.result.match(/Artist:\s*(.+?)(?:\n|$)/);
+          if (artistMatch && artistMatch[1]) {
+            songInfo.artist = artistMatch[1].trim();
+          }
+          // Extract YouTube link
+          const youtubeMatch = data.result.match(/YouTube:\s*(https:\/\/[^\s]+)/);
+          if (youtubeMatch && youtubeMatch[1]) {
+            songInfo.youtubeUrl = youtubeMatch[1].trim();
+          }
+          setSongDetails(songInfo);
+        } else {
+          setSongResult(data.error || "No song found.");
+          setSongDetails({});
+        }
       } catch (e) {
         setStatusMessage("EEG processed, but failed to get BPM");
+        setSongResult("Error: " + (e instanceof Error ? e.message : String(e)));
+        setSongDetails({});
       }
     }, 3000);
   };
@@ -501,9 +540,59 @@ export default function Preprocessing() {
                 </div>
                 <div className="mt-8 text-center">
                   {bpm !== null && (
-                    <div className="inline-block bg-primary text-white rounded-lg px-6 py-4 shadow text-2xl font-bold">
+                    <div className="inline-block bg-primary text-white rounded-lg px-6 py-4 shadow text-2xl font-bold mb-4">
                       Suggested Song BPM: {bpm}
                     </div>
+                  )}
+                  {songResult && (
+                    <Card className="mt-4 mx-auto max-w-xl">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Music className="h-5 w-5" />
+                          Recommended Song
+                        </CardTitle>
+                        <CardDescription>
+                          Based on your brain activity pattern
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 gap-4">
+                          {songDetails.title && (
+                            <div className="flex flex-col">
+                              <span className="text-sm text-muted-foreground">Song</span>
+                              <span className="text-lg font-medium">{songDetails.title}</span>
+                            </div>
+                          )}
+                          
+                          {songDetails.artist && (
+                            <div className="flex flex-col">
+                              <span className="text-sm text-muted-foreground">Artist</span>
+                              <span className="text-lg font-medium">{songDetails.artist}</span>
+                            </div>
+                          )}
+                          
+                          {songDetails.youtubeUrl && (
+                            <div className="mt-4">
+                              <a
+                                href={songDetails.youtubeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                              >
+                                <Youtube className="h-4 w-4" />
+                                Play on YouTube
+                              </a>
+                            </div>
+                          )}
+                          
+                          {(!songDetails.title || !songDetails.artist) && (
+                            <div className="text-lg whitespace-pre-line mt-2">
+                              {songResult}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
               </CardContent>

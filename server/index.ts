@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo, handleCalculateBpm } from "./routes/demo";
+import { handleRecommendSong, handleRecommendFromEEG } from "./routes/recommend";
 
 export function createServer() {
   const app = express();
@@ -19,6 +20,10 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
   app.post("/api/calculate-bpm", handleCalculateBpm);
+  
+  // Song recommendation routes
+  app.post("/api/recommend-song", handleRecommendSong);
+  app.post("/api/recommend-from-eeg", handleRecommendFromEEG);
 
   return app;
 }

@@ -13,8 +13,19 @@ import {
   MoreHorizontal, 
   List 
 } from "lucide-react";
+import { useSong } from "../lib/SongContext";
 
 export const NowPlayingBar = () => {
+  const { songInfo } = useSong();
+  const {
+    songTitle,
+    artist,
+    album,
+    albumCoverUrl,
+    currentTime,
+    totalTime,
+    progress
+  } = songInfo;
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 h-20 bg-[#333842] rounded-t-[10px] px-3 sm:px-5 flex items-center justify-between gap-2 sm:gap-4">
       {/* Left Section - Playback Controls */}
@@ -50,19 +61,19 @@ export const NowPlayingBar = () => {
         {/* Track Info */}
         <div className="flex items-center gap-4 mb-2">
           <img 
-            src="https://api.builder.io/api/v1/image/assets/TEMP/66efafa72425b614c848b254efe1e54b1bbdd411?width=102" 
-            alt="Get Lucky album cover"
+            src={albumCoverUrl}
+            alt={`${songTitle} album cover`}
             className="w-[51px] h-[51px] rounded-sm flex-shrink-0"
           />
           <div className="text-left min-w-0">
             <div className="text-sm font-normal text-music-text-primary tracking-wide">
-              Get Lucky
+              {songTitle}
             </div>
             <div className="text-sm text-music-text-secondary tracking-wide">
-              Daft Punk
+              {artist}
             </div>
             <div className="text-sm text-music-text-secondary tracking-wide">
-              Random Access Memories
+              {album}
             </div>
           </div>
         </div>
@@ -70,15 +81,15 @@ export const NowPlayingBar = () => {
         {/* Progress Bar */}
         <div className="w-full flex items-center gap-3">
           <span className="text-xs text-music-text-secondary font-normal tracking-wide">
-            2:23
+            {currentTime}
           </span>
           <div className="flex-1 relative">
             <div className="h-1 bg-music-text-secondary/25 rounded-full">
-              <div className="h-1 bg-music-text-primary rounded-full" style={{ width: '45%' }} />
+              <div className="h-1 bg-music-text-primary rounded-full" style={{ width: `${progress}%` }} />
             </div>
           </div>
           <span className="text-xs text-music-text-secondary font-normal tracking-wide">
-            4:45
+            {totalTime}
           </span>
         </div>
       </div>

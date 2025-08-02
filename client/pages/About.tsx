@@ -1,4 +1,17 @@
 import { useState } from "react";
+import React from "react";
+import { cn } from "@/lib/utils";
+import InfiniteScroll from "@/components/InfiniteScroll";
+import { BentoGrid, BentoGridItem } from "@/components/bento-grid";
+import {
+  IconArrowWaveRightUp,
+  IconBoxAlignRightFilled,
+  IconBoxAlignTopLeft,
+  IconClipboardCopy,
+  IconFileBroken,
+  IconSignature,
+  IconTableColumn,
+} from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,144 +72,127 @@ export default function About() {
             </TabsList>
 
             {/* About Tab */}
-            <TabsContent value="about" className="space-y-6 mt-8">
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                                             <Brain className="h-5 w-5 text-spotify-green" />
-                      Our Mission
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Legoat revolutionizes music discovery by analyzing your brainwave patterns to create 
-                      personalized music recommendations that match your current mental state and emotional needs.
-                    </p>
-                  </CardContent>
-                </Card>
+<TabsContent value="about" className="space-y-6 mt-8">
+  <BentoGrid className="grid-cols-2">
+    {/* How It Works - full width */}
+    <BentoGridItem
+      className="col-span-2"
+      title="How It Works"
+      description="Legoat uses EEG signals and AI to recommend music that matches your mental state."
+      icon={<Brain className="h-8 w-8 text-green-600" />}
+    />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                                             <Zap className="h-5 w-5 text-spotify-green" />
-                      How It Works
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Using advanced EEG technology, we capture your brain activity patterns and use 
-                      machine learning algorithms to match them with music that resonates with your neural state.
-                    </p>
-                  </CardContent>
-                </Card>
+    {/* Privacy First - leftmost, half width, double height */}
+    <BentoGridItem
+      className="row-span-2"
+      title="Privacy First"
+      description="Your brain data is encrypted and never shared. You control your information."
+      icon={<Shield className="h-8 w-8 text-green-600" />}
+    />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                                             <Music className="h-5 w-5 text-spotify-green" />
-                      Music Library
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Access millions of songs, playlists, and albums curated specifically for your 
-                      brain activity patterns and musical preferences.
-                    </p>
-                  </CardContent>
-                </Card>
+    {/* Right column stack */}
+    <BentoGridItem
+      title="Personalized Experience"
+      description="Get music suggestions tailored to your mood and focus, powered by advanced algorithms."
+      icon={<Music className="h-8 w-8 text-green-600" />}
+    />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                                             <Heart className="h-5 w-5 text-spotify-green" />
-                      Mental Wellness
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Track your mental states over time and discover how different music affects 
-                      your brain activity and emotional well-being.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Features Section */}
-              <div className="mt-12">
-                <h2 className="text-2xl font-bold mb-6">Key Features</h2>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-spotify-green/10 rounded-full flex items-center justify-center mt-1">
-                      <span className="text-spotify-green font-bold text-sm">1</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">EEG Integration</h3>
-                      <p className="text-sm text-muted-foreground">Connect compatible EEG devices for real-time brain activity monitoring.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-spotify-green/10 rounded-full flex items-center justify-center mt-1">
-                      <span className="text-spotify-green font-bold text-sm">2</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">AI Analysis</h3>
-                      <p className="text-sm text-muted-foreground">Advanced algorithms analyze your brainwave patterns and mental states.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-spotify-green/10 rounded-full flex items-center justify-center mt-1">
-                      <span className="text-spotify-green font-bold text-sm">3</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Smart Recommendations</h3>
-                      <p className="text-sm text-muted-foreground">Get personalized music suggestions based on your neural activity.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
+    <BentoGridItem
+      title="Community Driven"
+      description="Join a community of users exploring the intersection of neuroscience and music."
+      icon={<Users className="h-8 w-8 text-green-600" />}
+    />
+  </BentoGrid>
+</TabsContent>
 
             {/* Privacy Tab */}
             <TabsContent value="privacy" className="space-y-6 mt-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-green-600" />
-                    Privacy Policy
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Data Collection</h3>
-                    <p className="text-sm text-muted-foreground">
-                      We collect EEG data, music preferences, and usage patterns to provide personalized recommendations. 
-                      All data is encrypted and stored securely.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Data Usage</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Your brain activity data is used solely for music recommendation purposes. 
-                      We never sell or share your personal data with third parties.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Data Security</h3>
-                    <p className="text-sm text-muted-foreground">
-                      All data is encrypted using industry-standard protocols and stored in secure, 
-                      HIPAA-compliant servers with regular security audits.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Your Rights</h3>
-                    <p className="text-sm text-muted-foreground">
-                      You have the right to access, modify, or delete your data at any time. 
-                      Contact our support team for assistance.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex justify-center">
+                <div style={{ width: '100%', maxWidth: 500 }}>
+                  <InfiniteScroll
+                    items={[
+                      {
+                        content: (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2">
+                                <Shield className="h-5 w-5 text-green-600" />
+                                Privacy Policy
+                              </CardTitle>
+                            </CardHeader>
+                          </Card>
+                        ),
+                      },
+                      {
+                        content: (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Data Collection</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                We collect EEG data, music preferences, and usage patterns to provide personalized recommendations. 
+                                All data is encrypted and stored securely.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ),
+                      },
+                      {
+                        content: (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Data Usage</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                Your brain activity data is used solely for music recommendation purposes. 
+                                We never sell or share your personal data with third parties.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ),
+                      },
+                      {
+                        content: (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Data Security</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                All data is encrypted using industry-standard protocols and stored in secure, 
+                                HIPAA-compliant servers with regular security audits.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ),
+                      },
+                      {
+                        content: (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Your Rights</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">
+                                You have the right to access, modify, or delete your data at any time. 
+                                Contact our support team for assistance.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ),
+                      },
+                    ]}
+                    itemMinHeight={200}
+                    maxHeight={'600px'}
+                    width={'100%'}
+                    autoplay={true}
+                    autoplaySpeed={0.5}
+                    pauseOnHover={true}
+                  />
+                </div>
+              </div>
             </TabsContent>
 
             {/* Help Tab */}

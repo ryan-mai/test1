@@ -289,7 +289,12 @@ export default function Home() {
       </footer>
 
       {/* Now Playing Bar */}
-      <NowPlayingBar />
+      <NowPlayingBar
+        isPlaying={false}
+        currentTime={0}
+        duration={0}
+        volume={1}
+      />
     </div>
   );
 }

@@ -40,9 +40,9 @@ export default function Home() {
             ]} 
           />
           <div className="relative z-20 flex items-center gap-4">
-            <NavbarButton variant="primary" as="a" href="/login">
-              Log in
-            </NavbarButton>
+          <NavbarButton variant="primary" as="a" href="/login" style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}>
+            Log in
+          </NavbarButton>
           </div>
         </NavBody>
 
@@ -85,6 +85,7 @@ export default function Home() {
                 as="a"
                 href="/login"
                 className="w-full"
+                style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}
               >
                 Log in
               </NavbarButton>
@@ -94,6 +95,7 @@ export default function Home() {
                 as="a"
                 href="/login"
                 className="w-full"
+                style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}
               >
                 Log in
               </NavbarButton>

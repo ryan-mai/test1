@@ -25,3 +25,5 @@ dist-ssr
 .vscode/mcp.json
 .config/
 !.env
+
+.env

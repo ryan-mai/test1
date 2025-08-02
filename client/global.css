@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 2.4%;
+    --foreground: 0 0% 87.8%;
+
+    --card: 0 0% 6.7%;
+    --card-foreground: 0 0% 87.8%;
+
+    --popover: 0 0% 6.7%;
+    --popover-foreground: 0 0% 87.8%;
+
+    --primary: 0 0% 87.8%;
+    --primary-foreground: 0 0% 6.7%;
+
+    --secondary: 0 0% 12.5%;
+    --secondary-foreground: 0 0% 87.8%;
+
+    --muted: 0 0% 12.5%;
+    --muted-foreground: 0 0% 53.7%;
+
+    --accent: 0 0% 12.5%;
+    --accent-foreground: 0 0% 87.8%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 12.5%;
+    --input: 0 0% 12.5%;
+    --ring: 0 0% 83.1%;
+
+    --radius: 0.5rem;
+
+    /* Music streaming specific colors */
+    --music-bg-primary: 210 3% 2.4%;
+    --music-bg-secondary: 0 0% 6.7%;
+    --music-border: 0 0% 12.5%;
+    --music-text-primary: 0 0% 87.8%;
+    --music-text-secondary: 0 0% 53.7%;
+    --music-accent-pink: 340 58% 61%;
+    --music-accent-green: 152 46% 73%;
+    --music-accent-coral: 3 70% 85%;
+    --music-accent-lime: 156 61% 82%;
+    --music-accent-rose: 343 40% 72%;
+    --music-accent-blue: 218 44% 73%;
+    --music-accent-yellow: 49 93% 76%;
+    --music-accent-amber: 212 37% 74%;
+    --music-card-overlay: 32 32 32 0.5;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 210 3% 2.4%;
+    --foreground: 0 0% 87.8%;
+
+    --card: 0 0% 6.7%;
+    --card-foreground: 0 0% 87.8%;
+
+    --popover: 0 0% 6.7%;
+    --popover-foreground: 0 0% 87.8%;
+
+    --primary: 0 0% 87.8%;
+    --primary-foreground: 0 0% 6.7%;
+
+    --secondary: 0 0% 12.5%;
+    --secondary-foreground: 0 0% 87.8%;
+
+    --muted: 0 0% 12.5%;
+    --muted-foreground: 0 0% 53.7%;
+
+    --accent: 0 0% 12.5%;
+    --accent-foreground: 0 0% 87.8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 12.5%;
+    --input: 0 0% 12.5%;
+    --ring: 0 0% 83.1%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

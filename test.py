@@ -16,7 +16,6 @@ def generate(bpm):
     
     api_key = os.environ.get("GEMINI_API_KEY")
 
-
     if not api_key:
         print(json.dumps({"error": "No Gemini API key provided in .env or environment"}))
         return
@@ -57,6 +56,7 @@ def generate(bpm):
         # Verify that the BPM in the response meets our requirements
         try:
             # Try to extract the BPM from the response
+
             print(response_text)
             bpm_match = response_text.split("BPM: ")[1].split("\n")[0]
             returned_bpm = int(bpm_match.strip())

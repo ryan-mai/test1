@@ -20,6 +20,7 @@ export const ScrollStackItem: React.FC<ScrollStackItemProps> = ({
       backfaceVisibility: "hidden",
       transformStyle: "preserve-3d",
       position: "relative", // Ensure position is relative for z-index to work
+      zIndex: "auto", // Let the ScrollStack component control the z-index
     }}
   >
     {children}
@@ -130,8 +131,8 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
             topCardIndex = j;
           }
         }
-
-        // No need to apply blur in the reversed stacking behavior
+        
+        // No blur needed for this stacking effect
         blur = 0;
       }
 
@@ -162,8 +163,9 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
       if (hasChanged) {
         const transform = `translate3d(0, ${newTransform.translateY}px, 0) scale(${newTransform.scale}) rotate(${newTransform.rotation}deg)`;
-        // Change the z-index based on index to make higher cards appear on top
-        card.style.zIndex = `${cardsRef.current.length - i}`;
+        // Set z-index so that cards with higher index values appear on top
+        // This ensures that as you scroll from Genre to Decade/Year, Decade/Year will be on top
+        card.style.zIndex = `${i + 1}`;
         card.style.transform = transform;
         card.style.filter = "";
 
@@ -251,6 +253,10 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       card.style.webkitTransform = "translateZ(0)";
       card.style.perspective = "1000px";
       card.style.webkitPerspective = "1000px";
+      // Set initial z-index so that cards with higher index values appear on top initially
+      card.style.zIndex = `${i + 1}`;
+      // Make sure position is set to relative for z-index to work
+      card.style.position = "relative";
     });
 
     setupLenis();
@@ -295,6 +301,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
         WebkitTransform: "translateZ(0)",
         transform: "translateZ(0)",
         willChange: "scroll-position",
+        isolation: "isolate", // Creates a new stacking context
       }}
     >
       <div className="scroll-stack-inner pt-[20vh] px-20 pb-[50rem] min-h-screen">

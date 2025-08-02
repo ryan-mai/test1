@@ -705,9 +705,11 @@ export default function AnimatedPreprocessing() {
                 baseScale={1.0}
                 rotationAmount={0}
                 blurAmount={0}
+                stackPosition="25%"
+                scaleEndPosition="15%"
               >
                 {/* Genre Category */}
-                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#1DB954] to-[#121212] text-white">
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#1DB954] to-[#121212] text-white shadow-lg rounded-[40px]">
                   <div className="h-full">
                     <div className="flex justify-between items-center mb-6">
                       <div>
@@ -767,7 +769,7 @@ export default function AnimatedPreprocessing() {
                             <span className="text-lg font-bold text-white">+</span>
                           </div>
                           <Input 
-                            placeholder="Add custom genre..." 
+                            placeholder="Add" 
                             className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
                             value={customGenre}
                             onChange={(e) => setCustomGenre(e.target.value)}
@@ -795,7 +797,7 @@ export default function AnimatedPreprocessing() {
                 </ScrollStackItem>
                 
                 {/* Decade/Year Category */}
-                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#450CF5] to-[#121212] text-white">
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#450CF5] to-[#121212] text-white shadow-lg rounded-[40px]">
                   <div className="h-full">
                     <div className="flex justify-between items-center mb-6">
                       <div>
@@ -855,7 +857,7 @@ export default function AnimatedPreprocessing() {
                             <span className="text-lg font-bold text-white">+</span>
                           </div>
                           <Input 
-                            placeholder="Add custom year..." 
+                            placeholder="Add" 
                             className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
                             value={customYear}
                             onChange={(e) => setCustomYear(e.target.value)}
@@ -883,7 +885,7 @@ export default function AnimatedPreprocessing() {
                 </ScrollStackItem>
                 
                 {/* Artists Category */}
-                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#E4128B] to-[#121212] text-white">
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#E4128B] to-[#121212] text-white shadow-lg rounded-[40px]">
                   <div className="h-full">
                     <div className="flex justify-between items-center mb-6">
                       <div>
@@ -971,7 +973,7 @@ export default function AnimatedPreprocessing() {
                 </ScrollStackItem>
                 
                 {/* Mood Category */}
-                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#FF9500] to-[#121212] text-white">
+                <ScrollStackItem itemClassName="bg-gradient-to-br from-[#FF9500] to-[#121212] text-white shadow-lg rounded-[40px]">
                   <div className="h-full">
                     <div className="flex justify-between items-center mb-6">
                       <div>
@@ -1031,7 +1033,7 @@ export default function AnimatedPreprocessing() {
                             <span className="text-lg font-bold text-white">+</span>
                           </div>
                           <Input 
-                            placeholder="Add custom mood..." 
+                            placeholder="Add" 
                             className="text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8 p-0 pl-1"
                             value={customMood}
                             onChange={(e) => setCustomMood(e.target.value)}

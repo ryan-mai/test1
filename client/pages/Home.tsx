@@ -7,6 +7,7 @@ import { ArrowRight, Calendar, Clock, Compass, FileText, Image, Laptop, Lightbul
 import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { Link } from "react-router-dom";
 import SpotlightCard from "../components/SpotlightCard";
+import RollingGallery from "../components/RollingGallery";
 import {
   Navbar,
   NavBody,
@@ -29,12 +30,7 @@ export default function Home() {
       <Navbar>
         {/* Desktop Navigation */}
         <NavBody>
-          <NavbarLogo>
-            <Link to="/" className="flex items-center space-x-2">
-              <Lightbulb className="h-6 w-6" />
-              <span className="font-bold">Legoat</span>
-            </Link>
-          </NavbarLogo>
+          <NavbarLogo />
           <NavItems 
             items={[
               { name: "Music", link: "/music-recommendation" },
@@ -44,10 +40,10 @@ export default function Home() {
             ]} 
           />
           <div className="relative z-20 flex items-center gap-4">
-            <NavbarButton variant="secondary" as={Link} to="/login">
+            <NavbarButton variant="secondary" as={Link} href="/login">
               Log in
             </NavbarButton>
-            <NavbarButton variant="primary" as={Link} to="/login">
+            <NavbarButton variant="primary" as={Link} href="/login">
               Sign up
             </NavbarButton>
           </div>
@@ -90,7 +86,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="secondary"
                 as={Link}
-                to="/login"
+                href="/login"
                 className="w-full"
               >
                 Log in
@@ -99,7 +95,7 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 as={Link}
-                to="/login"
+                href="/login"
                 className="w-full"
               >
                 Sign up
@@ -123,13 +119,16 @@ export default function Home() {
           </p>
           <div className="flex w-full max-w-sm items-center space-x-2">
             <Input 
-              type="email" 
-              placeholder="Enter your email" 
+              type="text" 
+              placeholder="Type something..." 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Button type="submit">
-              Get Started
+            <Button 
+              type="button" 
+              onClick={() => window.location.href = '/mental-state'}
+            >
+              Generate
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -187,43 +186,8 @@ export default function Home() {
             Connecting your brain to music is simpler than you think.
           </p>
         </div>
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              1
-            </div>
-            <h3 className="mt-4 font-semibold">Connect EEG Device</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Connect your compatible EEG headset to our platform.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              2
-            </div>
-            <h3 className="mt-4 font-semibold">Record Brain Activity</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Record a short sample of your brain activity.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              3
-            </div>
-            <h3 className="mt-4 font-semibold">Analysis</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Our algorithms analyze your EEG data patterns.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              4
-            </div>
-            <h3 className="mt-4 font-semibold">Get Recommendations</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Receive music recommendations tailored to your brain activity.
-            </p>
-          </div>
+        <div className="mt-8 flex justify-center">
+          <RollingGallery autoplay pauseOnHover />
         </div>
       </section>
 

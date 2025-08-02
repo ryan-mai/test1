@@ -27,6 +27,13 @@ const MusicStreamingHome = () => {
             >
               Login
             </button>
+            <button
+              className="inline-flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg bg-white/5 text-music-text-primary text-sm tracking-wide whitespace-nowrap hover:bg-white/10 transition-colors"
+              onClick={() => navigate('/animated-preprocessing')}
+              type="button"
+            >
+              Animated EEG
+            </button>
           </div>
           
           {/* Settings Button */}

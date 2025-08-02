@@ -14,7 +14,6 @@ import EEGDataset from "./pages/EEGDataset";
 import Preprocessing from "./pages/Preprocessing";
 import AnimatedPreprocessing from "./pages/AnimatedPreprocessing";
 import MentalState from "./pages/MentalState";
-import MusicRecommendation from "./pages/MusicRecommendation";
 import AudioRetrieval from "./pages/AudioRetrieval";
 import { TimelineDemo } from "./pages/Library";
 import Settings from "./pages/Settings";
@@ -43,7 +42,6 @@ const App = () => {
               <Route path="/preprocessing" element={<Preprocessing />} />
               <Route path="/animated-preprocessing" element={<AnimatedPreprocessing />} />
               <Route path="/mental-state" element={<MentalState />} />
-            <Route path="/music-recommendation" element={<MusicRecommendation />} />
             <Route path="/audio-retrieval" element={<AudioRetrieval />} />
             <Route path="/library" element={<TimelineDemo />} />
             <Route path="/settings" element={<Settings />} />

@@ -13,7 +13,6 @@ import EEGDataset from "./pages/EEGDataset";
 import AnimatedPreprocessing from "./pages/AnimatedPreprocessing";
 import MentalState from "./pages/MentalState";
 import AudioRetrieval from "./pages/AudioRetrieval";
-import { TimelineDemo } from "./pages/Library";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import Index from "./pages/Index";
@@ -43,7 +42,6 @@ const App = () => {
                 <Route path="/animated-preprocessing" element={<AnimatedPreprocessing />} />
                 <Route path="/mental-state" element={<MentalState />} />
                 <Route path="/audio-retrieval" element={<AudioRetrieval />} />
-                <Route path="/library" element={<TimelineDemo />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/about" element={<About />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -56,7 +54,5 @@ const App = () => {
     </QueryClientProvider>
   );
 };
-
-createRoot(document.getElementById("root")!).render(<App />);
 
 createRoot(document.getElementById("root")!).render(<App />);

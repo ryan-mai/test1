@@ -39,7 +39,7 @@ const AudioContext = createContext<AudioContextType>({
   songTitle: 'Test Song',
   artist: 'Demo Artist',
   albumCoverUrl: '/placeholder.svg',
-  songUrl: '/test-song.mp3',
+  songUrl: '/merry.mp3',
   togglePlay: () => {},
   seek: () => {},
   setVolume: () => {},
@@ -63,7 +63,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [songTitle, setSongTitle] = useState('Test Song');
   const [artist, setArtist] = useState('Demo Artist');
   const [albumCoverUrl, setAlbumCoverUrl] = useState('/placeholder.svg');
-  const [songUrl, setSongUrl] = useState('/test-song.mp3');
+  const [songUrl, setSongUrl] = useState('/merry.mp3');
 
   // Initialize audio element
   useEffect(() => {
@@ -99,7 +99,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Save current playback state
     const wasPlaying = isPlaying;
-    const currentPosition = currentTime;
     
     // Update song metadata
     setSongUrl(songInfo.songUrl);
@@ -111,10 +110,27 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     audioRef.current.src = songInfo.songUrl;
     audioRef.current.load();
     
-    // Restore playback if it was playing
-    if (wasPlaying) {
-      audioRef.current.play().catch(err => console.error("Error playing audio:", err));
-    }
+    // Add an event listener to check if loading is successful
+    const handleCanPlay = () => {
+      console.log("Audio can now be played");
+      // Restore playback if it was playing
+      if (wasPlaying) {
+        audioRef.current?.play().catch(err => console.error("Error playing audio:", err));
+      }
+      // Remove the event listener after it fires once
+      audioRef.current?.removeEventListener('canplay', handleCanPlay);
+    };
+    
+    // Add error handling
+    const handleError = (e: Event) => {
+      console.error("Error loading audio:", e);
+      console.error("Failed to load audio from URL:", songInfo.songUrl);
+      // Remove the event listener after it fires once
+      audioRef.current?.removeEventListener('error', handleError);
+    };
+    
+    audioRef.current.addEventListener('canplay', handleCanPlay);
+    audioRef.current.addEventListener('error', handleError);
   };
 
   // Toggle play/pause
@@ -124,7 +140,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audioRef.current.play().catch(err => console.error("Error playing audio:", err));
+      audioRef.current.play()
+        .catch(err => {
+          console.error("Error playing audio:", err);
+          // Check if the audio source exists
+          if (!audioRef.current.src || audioRef.current.src === window.location.href) {
+            console.error("Audio source is missing or invalid");
+            // Set a default source if needed
+            if (songUrl) {
+              audioRef.current.src = songUrl;
+              audioRef.current.load();
+              audioRef.current.play().catch(e => console.error("Second play attempt failed:", e));
+            }
+          }
+        });
     }
   };
 
@@ -199,7 +228,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <AudioContext.Provider value={value}>
       {/* Add the audio element here so it's available globally */}
-      <audio ref={audioRef} src={songUrl} preload="metadata" />
+      <audio 
+        ref={audioRef} 
+        src={songUrl} 
+        preload="metadata"
+        onError={(e) => console.error("Audio element error:", e)}
+      />
       {children}
     </AudioContext.Provider>
   );

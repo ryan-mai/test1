@@ -26,15 +26,12 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
-<<<<<<< HEAD
-from backend.recommend_bpm import calculate_bpm
-from backend.recommend_genre import generate
+# from backend.recommend_bpm import calculate_bpm
+# from backend.recommend_genre import generate
 from backend.interpret_speech import AudioLoop, MODEL, CONFIG
-=======
 from backend.recommend_bpm import get_bpm_genre
 from backend.recommend_genre import generate_genre
 from backend.recommend_song import generate_songs
->>>>>>> Hung_Chi
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -129,7 +126,6 @@ async def upload_file(file: UploadFile = File(...)):
     uploaded_file_path = file_path
     return {"filename": file.filename, "path": file_path}
 
-<<<<<<< HEAD
 # ==================== Mental Health Analysis API (from api.py) ====================
 
 class StateManager:
@@ -327,13 +323,11 @@ async def websocket_endpoint(websocket: WebSocket):
         # Clean up on disconnect
         await state_manager.stop_session()
 
-=======
 @app.get("/recommendation")
 async def recommendation():
     try:
         # Get BPM from EEG analysis
         bpm, wave_data = get_bpm_genre(uploaded_file_path)
->>>>>>> Hung_Chi
 
         # Get corresponding genre
         genre_json = generate_genre(bpm, wave_data)

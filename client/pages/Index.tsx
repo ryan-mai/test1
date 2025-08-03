@@ -1,27 +1,44 @@
 import React from 'react';
 import GlareHover from '../components/ui/GlareHover';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaHome, FaSearch } from 'react-icons/fa';
 import { NowPlayingBar } from '../components/NowPlayingBar';
 import { useAudio } from '../lib/AudioContext';
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // Use the global audio context
 
   // Get current song info from context
   const { initializeSong, songUrl } = useAudio();
+  
+  // Check if current path is one of the allowed pages for search
+  const isSearchEnabled = () => {
+    const allowedPaths = ['/', '/home', '/about', '/mental-state', '/login'];
+    return allowedPaths.includes(location.pathname);
+  };
 
   
   // Only initialize the default song if not already set
   React.useEffect(() => {
-    if (songUrl === '/test-song.mp3') return;
+    if (songUrl === '/merry.mp3') return;
     initializeSong({
-      songUrl: '/test-song.mp3',
-      songTitle: 'Test Song',
+      songUrl: '/merry.mp3',
+      songTitle: 'Merry Go Round of Life',
       artist: 'Demo Artist',
       albumCoverUrl: '/placeholder.svg'
     });
+    
+    // Force play after a short delay to ensure audio is loaded
+    const timer = setTimeout(() => {
+      const audioElement = document.querySelector('audio');
+      if (audioElement) {
+        audioElement.play().catch(err => console.error("Error auto-playing audio:", err));
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [initializeSong, songUrl]);
 
   // Sample data for daily mix cards
@@ -31,7 +48,7 @@ const dailyMixes = [
         number: '01',
         color: 'cyan',
         title: 'About',
-        description: 'Learn more about the project',
+        description: 'Learn More About Us',
         path: '/home',
         image: '/neurons.jpg',
     },
@@ -40,18 +57,18 @@ const dailyMixes = [
         number: '02',
         color: 'yellow',
         title: 'Processing',
-        description: 'Process and analyze audio data',
+        description: 'Upload & Analyze Data',
         path: '/animated-preprocessing',
-        image: '/placeholder.svg',
+        image: '/neuroplasticity.jpg',
     },
     {
         id: 3,
         number: '03',
         color: 'red',
-        title: 'Mental Health',
-        description: 'Brain activity dashboard',
+        title: 'Dashboard',
+        description: 'Patient\'s Dashboard',
         path: '/mental-state',
-        image: '/placeholder.svg',
+        image: '/dashboard.jpg',
     },
     {
         id: 4,
@@ -60,7 +77,7 @@ const dailyMixes = [
         title: 'Login',
         description: 'Sign in to your account',
         path: '/login',
-        image: '/placeholder.svg',
+        image: '/score.jpg',
     },
 ];
 
@@ -96,7 +113,9 @@ const dailyMixes = [
               <input
                 type="text"
                 placeholder="What do you want to play?"
-                className="bg-transparent border-none outline-none text-[#B3B3B3] w-full text-lg"
+                className={`bg-transparent border-none outline-none w-full text-lg ${isSearchEnabled() ? 'text-[#B3B3B3]' : 'text-[#666666] cursor-not-allowed'}`}
+                disabled={!isSearchEnabled()}
+                title={!isSearchEnabled() ? "Search is only available on Home, About, Dashboard, and Login pages" : ""}
               />
             </div>
           </div>
@@ -192,7 +211,6 @@ const dailyMixes = [
                     >
                       {mix.title}
                     </h3>
-                    <p className="text-sm text-white">{mix.description}</p>
                   </GlareHover>
                 </div>
               ))}

@@ -1,7 +1,3 @@
-/*
-	Installed from https://reactbits.dev/ts/tailwind/
-*/
-
 import {
   FC,
   Suspense,
@@ -26,7 +22,7 @@ import {
   Environment,
   ContactShadows,
 } from "@react-three/drei";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { OBJLoader } from "three-stdlib";
 import * as THREE from "three";
 
 export interface ViewerProps {
@@ -212,7 +208,7 @@ const ModelInner: FC<ModelInnerProps> = ({
       persp.position.set(
         pivotW.current.x,
         pivotW.current.y,
-        pivotW.current.z + d,
+        pivotW.current.z + d
       );
       persp.near = d / 10;
       persp.far = d * 10;
@@ -340,7 +336,7 @@ const ModelInner: FC<ModelInnerProps> = ({
         camera.position.z = THREE.MathUtils.clamp(
           startZ * ratio,
           minZoom,
-          maxZoom,
+          maxZoom
         );
         invalidate();
       }
@@ -469,7 +465,7 @@ const ModelViewer: FC<ViewerProps> = ({
   const initPitch = deg2rad(defaultRotationY);
   const camZ = Math.min(
     Math.max(defaultZoom, minZoomDistance),
-    maxZoomDistance,
+    maxZoomDistance
   );
 
   const capture = () => {
@@ -504,6 +500,7 @@ const ModelViewer: FC<ViewerProps> = ({
         width,
         height,
         touchAction: "pan-y pinch-zoom",
+        background: "#fffff"
       }}
       className="relative"
     >
@@ -526,9 +523,10 @@ const ModelViewer: FC<ViewerProps> = ({
           cameraRef.current = camera;
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.outputColorSpace = THREE.SRGBColorSpace;
+          gl.setClearColor('#fff');
         }}
         camera={{ fov: 50, position: [0, 0, camZ], near: 0.01, far: 100 }}
-        style={{ touchAction: "pan-y pinch-zoom" }}
+        style={{ touchAction: "pan-y pinch-zoom", background: "#fff" }}
       >
         {environmentPreset !== "none" && (
           <Environment preset={environmentPreset as any} background={false} />

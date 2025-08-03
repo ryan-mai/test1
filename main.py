@@ -59,18 +59,31 @@ async def recommendation():
 @app.get("/recommend_songs")
 async def recommend_songs():
     try:
+        # Get BPM + wave data
         bpm, wave_data = get_bpm_genre(uploaded_file_path)
+        
+        # Get genre from wave data
         genre_json = generate_genre(bpm, wave_data)
         genre = json.loads(genre_json).get("genre")
-
-        songs_json = generate_songs(bpm, genre)
+        
+        # Generate 8 songs in a loop
+        songs = []
+        for _ in range(4):
+            song_json = generate_songs(bpm, genre)
+            try:
+                song_data = json.loads(song_json)
+            except json.JSONDecodeError:
+                return {"error": "Invalid JSON from Gemini", "raw": song_json}
+            songs.append(song_data)
+        
         return {
             "bpm": bpm,
             "genre": genre,
-            "songs": json.loads(songs_json).get("songs", [])
+            "songs": songs
         }
     except Exception as e:
         return {"error": str(e)}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

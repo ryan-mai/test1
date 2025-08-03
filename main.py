@@ -26,12 +26,20 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
+<<<<<<< HEAD
 from backend.recommend_bpm import calculate_bpm
 from backend.recommend_genre import generate
 from backend.interpret_speech import AudioLoop, MODEL, CONFIG
+=======
+from backend.recommend_bpm import get_bpm_genre
+from backend.recommend_genre import generate_genre
+from backend.recommend_song import generate_songs
+>>>>>>> Hung_Chi
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+uploaded_file_path = None
 
 app = FastAPI()
 
@@ -113,12 +121,15 @@ class AnalysisResponse(BaseModel):
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
+    global uploaded_file_path  # <-- add this
     print("called")
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    file_path = os.path.abspath(os.path.join(UPLOAD_DIR, file.filename))
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+    uploaded_file_path = file_path
     return {"filename": file.filename, "path": file_path}
 
+<<<<<<< HEAD
 # ==================== Mental Health Analysis API (from api.py) ====================
 
 class StateManager:
@@ -316,7 +327,40 @@ async def websocket_endpoint(websocket: WebSocket):
         # Clean up on disconnect
         await state_manager.stop_session()
 
+=======
+@app.get("/recommendation")
+async def recommendation():
+    try:
+        # Get BPM from EEG analysis
+        bpm, wave_data = get_bpm_genre(uploaded_file_path)
+>>>>>>> Hung_Chi
 
+        # Get corresponding genre
+        genre_json = generate_genre(bpm, wave_data)
+
+        return {
+            "bpm": bpm,
+            "genre": json.loads(genre_json).get("genre"),
+            "wave_data": json.loads(genre_json).get("wave_data")
+        }
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.get("/recommend_songs")
+async def recommend_songs():
+    try:
+        bpm, wave_data = get_bpm_genre(uploaded_file_path)
+        genre_json = generate_genre(bpm, wave_data)
+        genre = json.loads(genre_json).get("genre")
+
+        songs_json = generate_songs(bpm, genre)
+        return {
+            "bpm": bpm,
+            "genre": genre,
+            "songs": json.loads(songs_json).get("songs", [])
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8008)

@@ -30,14 +30,14 @@ def ask_gemini(prompt):
 def generate_songs(bpm, genre):
     """Get song recommendation one field at a time for stability."""
     
-    title = ask_gemini(f"Give me ONLY the title of a popular {genre} song with BPM around {bpm}. No extra words.")
+    title = ask_gemini(f"Give me ONLY the name of a popular {genre} song with BPM around {bpm}. No extra words.")
     artist = ask_gemini(f"Give me ONLY the artist of the song '{title}'. No extra words.")
     album = ask_gemini(f"Give me ONLY the album name of the song '{title}' by '{artist}'. No extra words.")
+    link = ask_gemini(f"Give me ONLY the valid link for the song '{title}' by '{artist}'. No extra words.")
     
     return json.dumps({
         "title": title,
         "artist": artist,
         "album": album,
-        "bpm": bpm,
-        "genre": genre
+        "link": link
     })

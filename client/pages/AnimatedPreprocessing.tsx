@@ -160,6 +160,7 @@ export default function AnimatedPreprocessing() {
     album?: string;
     bpm?: number;
     genre?: string;
+    link?: string;
   }> | null>(null);
 
   // Refs
@@ -629,16 +630,24 @@ export default function AnimatedPreprocessing() {
                 const gradientClass = gradients[index % gradients.length];
 
                 return (
-                  <ScrollStackItem key={index} itemClassName={`${gradientClass} text-white shadow-lg rounded-[40px]`}>
-                    <div className="h-full p-6 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold">{song.title || `Song ${index + 1}`}</h3>
-                        <p className="text-sm text-white/70">{song.artist || "Unknown Artist"}</p>
-                        <p className="mt-2 text-sm">Album: {song.album || "Unknown"}</p>
-                        <p className="text-sm">BPM: {song.bpm}</p>
-                      </div>
-                    </div>
-                  </ScrollStackItem>
+                  <ScrollStackItem 
+      key={index} 
+      itemClassName={`${gradientClass} text-white shadow-lg rounded-[40px] cursor-pointer`}
+    >
+      <a 
+        href={song.link || `https://www.youtube.com/results?search_query=${encodeURIComponent(song.title + " " + song.artist)}`} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="block h-full p-6 flex flex-col justify-between hover:opacity-90 transition-opacity"
+      >
+        <div>
+          <h3 className="text-xl font-bold">{song.title || `Song ${index + 1}`}</h3>
+          <p className="text-sm text-white/70">{song.artist || "Unknown Artist"}</p>
+          <p className="mt-2 text-sm">Album: {song.album || "Unknown"}</p>
+          <p className="text-sm">BPM: {song.bpm}</p>
+        </div>
+      </a>
+    </ScrollStackItem>
                 );
               })}
 

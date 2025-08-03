@@ -41,7 +41,7 @@ const dailyMixes = [
         color: 'yellow',
         title: 'Processing',
         description: 'Process and analyze audio data',
-        path: '/animatedpreprocessing',
+        path: '/animated-preprocessing',
         image: '/placeholder.svg',
     },
     {

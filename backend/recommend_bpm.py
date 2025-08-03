@@ -41,4 +41,4 @@ def get_bpm_genre(uploaded_file_path):
         "calmness_score": float(np.nan_to_num(calmness_score)),
     }
 
-    return round(float(np.nan_to_num(bpm)), 2), wave_data
+    return round(float(np.nan_to_num(bpm)), 0), wave_data

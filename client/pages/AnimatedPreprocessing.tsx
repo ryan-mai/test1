@@ -566,16 +566,16 @@ export default function AnimatedPreprocessing() {
           </p>
           <div className="h-[400px] w-full mt-[-10px]">
             <ScrollStack
-  key={songList ? songList.length : 0} // force re-layout when songs change
-  className="rounded-xl"
-  itemDistance={30}
-  itemStackDistance={12}
-  baseScale={1.0}
-  rotationAmount={0}
-  blurAmount={0}
-  stackPosition="5%"
-  scaleEndPosition="10%"
->
+              key={songList ? songList.length : 0} // force re-layout when songs change
+              className="rounded-xl"
+              itemDistance={30}
+              itemStackDistance={12}
+              baseScale={1.0}
+              rotationAmount={0}
+              blurAmount={0}
+              stackPosition="5%"
+              scaleEndPosition="10%"
+            >
 
               {/* Genre Category */}
               {songList && songList.length > 0 && songList.slice(0, 4).map((song, index) => {

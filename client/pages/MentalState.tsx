@@ -24,6 +24,10 @@ import {
   CheckCircle,
   Music
 } from "lucide-react";
+import { useBrainwave } from "@/lib/BrainwaveContext";
+import { NowPlayingBar } from "@/components/NowPlayingBar";
+import { motion, AnimatePresence } from "framer-motion";
+import SplitText from "@/components/SplitText";
 
 // Infinite scrolling row demo items
 const infiniteRowItems = [
@@ -35,7 +39,7 @@ const infiniteRowItems = [
 
 function InfiniteScrollingRow() {
   return (
-    <div className="relative w-full overflow-hidden h-32 bg-transparent">
+    <div className="relative w-full overflow-hidden h-40 bg-transparent">
       <div className="flex items-center gap-8 animate-infinite-scroll whitespace-nowrap">
         {infiniteRowItems.map((item, idx) => (
           <a key={idx} href={item.link} className="inline-flex flex-col items-center justify-center min-w-[180px] mx-2">
@@ -54,9 +58,7 @@ function InfiniteScrollingRow() {
     </div>
   );
 }
-import { AnimatePresence, motion } from "motion/react";
 import { useOutsideClick } from "@/hooks/use-outside-click";
-import { NowPlayingBar } from "@/components/NowPlayingBar";
 import { useAudio } from "@/lib/AudioContext";
 
 
@@ -100,11 +102,10 @@ export const CloseIcon = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4 text-black"
+      className="lucide lucide-x"
     >
-      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-      <path d="M18 6l-12 12" />
-      <path d="M6 6l12 12" />
+      <path d="M18 6 6 18"></path>
+      <path d="m6 6 12 12"></path>
     </motion.svg>
   );
 };
@@ -399,16 +400,86 @@ export function ExpandableCardDemo() {
 export default function MentalState() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [brainwaveData, setBrainwaveData] = useState<BrainwaveData>({
-    alpha: 0,
-    beta: 0,
-    theta: 0,
-    delta: 0,
-    gamma: 0
-  });
+  
+  // Get brainwave data from shared context
+  const { brainwaveData, updateBrainwaveData, processingStatus, statusMessage } = useBrainwave();
+  
+  // Local state for UI
   const [currentMentalState, setCurrentMentalState] = useState<MentalState | null>(null);
   const [signalQuality, setSignalQuality] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  
+  // Effect to update mental state based on brainwave data from context
+  useEffect(() => {
+    if (processingStatus === 'success' && brainwaveData) {
+      // Process the brainwave data to determine mental state
+      determineMentalState(brainwaveData);
+      // If we have data, consider ourselves connected
+      setIsConnected(true);
+      setSignalQuality(85); // Assume good signal quality if we have data
+    }
+  }, [brainwaveData, processingStatus]);
+  
+  // Function to determine mental state based on brainwave data
+  const determineMentalState = (data: BrainwaveData) => {
+    // Simple algorithm to determine mental state based on brainwave bands
+    // This is a placeholder - you would use actual neuroscience here
+    
+    let mentalStateType = '';
+    let confidence = 0;
+    let description = '';
+    let color = '';
+    let icon = <Activity className="h-5 w-5" />;
+    
+    // Higher alpha often indicates relaxation
+    if (data.alpha > 60) {
+      mentalStateType = 'Relaxed';
+      confidence = 0.8;
+      description = 'You are in a calm, relaxed state. Your mind is clear and at ease.';
+      color = 'bg-green-500';
+      icon = <Heart className="h-5 w-5" />;
+    } 
+    // Higher beta often indicates focus/concentration
+    else if (data.beta > 60) {
+      mentalStateType = 'Focused';
+      confidence = 0.75;
+      description = 'You are focused and engaged. Your attention is directed and alert.';
+      color = 'bg-blue-500';
+      icon = <Target className="h-5 w-5" />;
+    }
+    // Higher theta can indicate creativity or drowsiness
+    else if (data.theta > 60) {
+      mentalStateType = 'Creative';
+      confidence = 0.7;
+      description = 'Your mind is in a creative flow state, with heightened imagination.';
+      color = 'bg-purple-500';
+      icon = <Zap className="h-5 w-5" />;
+    }
+    // Higher delta often indicates deep sleep or distress
+    else if (data.delta > 60) {
+      mentalStateType = 'Distressed';
+      confidence = 0.6;
+      description = 'You may be experiencing stress or anxiety. Consider some relaxation techniques.';
+      color = 'bg-red-500';
+      icon = <AlertCircle className="h-5 w-5" />;
+    }
+    // Balanced profile
+    else {
+      mentalStateType = 'Balanced';
+      confidence = 0.65;
+      description = 'Your brain activity shows a balanced pattern across different frequencies.';
+      color = 'bg-yellow-500';
+      icon = <Activity className="h-5 w-5" />;
+    }
+    
+    setCurrentMentalState({
+      type: mentalStateType,
+      confidence: confidence * 100, // Convert to percentage
+      description,
+      color,
+      icon
+    });
+  };
 
   // Connect to the backend API
   useEffect(() => {
@@ -435,8 +506,9 @@ export default function MentalState() {
           .then(response => response.json())
           .then(data => {
             if (data.mentalState) {
-              // Update brainwave data (random for now, but could be real data)
-              setBrainwaveData({
+              // We're now using brainwave data from context, so we update it
+              // using the updateBrainwaveData function instead of the non-existent setBrainwaveData
+              updateBrainwaveData({
                 alpha: Math.random() * 100,  // Replace with actual data when available
                 beta: Math.random() * 100,
                 theta: Math.random() * 100,
@@ -560,7 +632,7 @@ export default function MentalState() {
   const resetRecording = () => {
     setIsRecording(false);
     setRecordingTime(0);
-    setBrainwaveData({
+    updateBrainwaveData({
       alpha: 0,
       beta: 0,
       theta: 0,
@@ -651,12 +723,6 @@ export default function MentalState() {
             <ArrowLeft className="h-4 w-4" />
             <span className="font-semibold">Back to Home</span>
           </Link>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-sm">{isConnected ? 'Connected' : 'Disconnected'}</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -668,12 +734,18 @@ export default function MentalState() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-spotify-green rounded-full mb-6">
               <Brain className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight mb-4 text-white">
-              Mental State <span className="text-spotify-green">Analysis</span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Track your 
-            </p>
+            <div className="mb-4">
+              <SplitText 
+                text="Dashboard" 
+                splitType="chars"
+                delay={50}
+                duration={0.8}
+                from={{ opacity: 0, y: 30, rotateX: -90 }}
+                to={{ opacity: 1, y: 0, rotateX: 0 }}
+                ease="power4.out"
+                className="text-6xl font-bold text-white"
+              />
+            </div>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
@@ -689,51 +761,59 @@ export default function MentalState() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(brainwaveData).map(([wave, value]) => (
-                  <div key={wave} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium capitalize text-gray-300">{wave} Waves</span>
-                      <span className="text-sm text-gray-400">{Math.round(value)}%</span>
+                {Object.entries(brainwaveData).map(([wave, value]) => {
+                  // Skip non-numeric properties like 'bpm' and 'genre'
+                  if (wave === 'bpm' || wave === 'genre') return null;
+                  
+                  // Ensure value is a number
+                  const numericValue = typeof value === 'number' ? value : 0;
+                  
+                  return (
+                    <div key={wave} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium capitalize text-gray-300">{wave} Waves</span>
+                        <span className="text-sm text-gray-400">{Math.round(numericValue)}%</span>
+                      </div>
+                      {/* Sinusoidal SVG wave instead of Progress bar */}
+                      <div className="h-8 w-full flex items-center">
+                        <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" style={{ width: '100%', height: '32px', display: 'block' }}>
+                          <polyline
+                            fill="none"
+                            stroke={(() => {
+                              switch (wave) {
+                                case 'alpha': return '#bae6fd'; // blue-200 (dimmed)
+                                case 'beta': return '#ddd6fe'; // purple-200
+                                case 'theta': return '#bbf7d0'; // green-200
+                                case 'delta': return '#fef9c3'; // yellow-200
+                                case 'gamma': return '#fbcfe8'; // pink-200
+                                default: return '#c7d2fe'; // indigo-200
+                              }
+                            })()}
+                            strokeWidth="2"
+                            points={(() => {
+                              // Generate a more curvy sinusoidal wave
+                              const amplitude = 10 + (numericValue / 10); // amplitude based on value
+                              const frequency = 3 + (numericValue / 50); // higher base frequency for more curves
+                              const points = [];
+                              for (let x = 0; x <= 200; x += 2) { // more points for smoother, curvier wave
+                                const y = 16 + amplitude * Math.sin((x / 200) * frequency * 2 * Math.PI);
+                                points.push(`${x},${y.toFixed(2)}`);
+                              }
+                              return points.join(' ');
+                            })()}
+                          />
+                        </svg>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {wave === 'alpha' && 'Relaxation and calmness (8-13 Hz)'}
+                        {wave === 'beta' && 'Active thinking and concentration (13-30 Hz)'}
+                        {wave === 'theta' && 'Deep relaxation and creativity (4-8 Hz)'}
+                        {wave === 'delta' && 'Deep sleep and unconsciousness (0.5-4 Hz)'}
+                        {wave === 'gamma' && 'High-level processing and insight (30-100 Hz)'}
+                      </div>
                     </div>
-                    {/* Sinusoidal SVG wave instead of Progress bar */}
-                    <div className="h-8 w-full flex items-center">
-                      <svg width="100%" height="32" viewBox="0 0 200 32" preserveAspectRatio="none" style={{ width: '100%', height: '32px', display: 'block' }}>
-                        <polyline
-                          fill="none"
-                          stroke={(() => {
-                            switch (wave) {
-                              case 'alpha': return '#bae6fd'; // blue-200 (dimmed)
-                              case 'beta': return '#ddd6fe'; // purple-200
-                              case 'theta': return '#bbf7d0'; // green-200
-                              case 'delta': return '#fef9c3'; // yellow-200
-                              case 'gamma': return '#fbcfe8'; // pink-200
-                              default: return '#c7d2fe'; // indigo-200
-                            }
-                          })()}
-                          strokeWidth="2"
-                          points={(() => {
-                            // Generate a more curvy sinusoidal wave
-                            const amplitude = 10 + (value / 10); // amplitude based on value
-                            const frequency = 3 + (value / 50); // higher base frequency for more curves
-                            const points = [];
-                            for (let x = 0; x <= 200; x += 2) { // more points for smoother, curvier wave
-                              const y = 16 + amplitude * Math.sin((x / 200) * frequency * 2 * Math.PI);
-                              points.push(`${x},${y.toFixed(2)}`);
-                            }
-                            return points.join(' ');
-                          })()}
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {wave === 'alpha' && 'Relaxation and calmness (8-13 Hz)'}
-                      {wave === 'beta' && 'Active thinking and concentration (13-30 Hz)'}
-                      {wave === 'theta' && 'Deep relaxation and creativity (4-8 Hz)'}
-                      {wave === 'delta' && 'Deep sleep and unconsciousness (0.5-4 Hz)'}
-                      {wave === 'gamma' && 'High-level processing and insight (30-100 Hz)'}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
 
@@ -779,7 +859,7 @@ export default function MentalState() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="w-full">
                 <InfiniteScrollingRow />
               </div>
             </CardContent>

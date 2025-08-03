@@ -17,7 +17,7 @@ def generate_genre(bpm, wave_data):
     
     client = genai.Client(api_key=api_key)
     
-    model = "gemini-2.5-flash-lite"
+    model = "gemini-2.5-pro"
     
     contents = [
         types.Content(

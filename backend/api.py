@@ -2,8 +2,9 @@ import os
 import asyncio
 import base64
 import json
+import requests
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
@@ -11,6 +12,9 @@ import threading
 
 # Import from interpret_speech.py
 from interpret_speech import AudioLoop, genai, MODEL, CONFIG
+
+# YouTube API key
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 
 app = FastAPI()
 
@@ -97,7 +101,7 @@ class StateManager:
             prompt += f"\n\nUser's text: {text}"
         
         # For direct API analysis (not using the AudioLoop)
-        model = self.client.get_model("models/gemini-2.5-flash-preview")
+        model = self.client.get_model("models/gemini-2.5-pro")
         response = model.generate_content(prompt)
         
         try:
@@ -245,6 +249,78 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         # Clean up on disconnect
         await state_manager.stop_session()
+
+# YouTube URL endpoint
+class YouTubeUrlRequest(BaseModel):
+    title: str
+    artist: str
+
+@app.post("/api/get_youtube_url")
+async def get_youtube_url(request: YouTubeUrlRequest):
+    """Get YouTube URL for a song"""
+    try:
+        song_title = request.title
+        artist = request.artist
+        
+        # Create search query
+        search_query = f"{song_title} {artist} official music video"
+        
+        # If we have a YouTube API key, use the official API
+        if YOUTUBE_API_KEY:
+            try:
+                from googleapiclient.discovery import build
+                
+                # Create YouTube API client
+                youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+                
+                # Execute search request
+                search_response = youtube.search().list(
+                    q=search_query,
+                    part='snippet',
+                    maxResults=1,
+                    type='video'
+                ).execute()
+                
+                # Get the video ID
+                if not search_response.get('items'):
+                    return {"error": "No YouTube video found for this song"}
+                
+                video_id = search_response['items'][0]['id']['videoId']
+                video_title = search_response['items'][0]['snippet']['title']
+                thumbnail = search_response['items'][0]['snippet']['thumbnails']['high']['url']
+                
+                # Form the video URL
+                video_url = f"https://www.youtube.com/watch?v={video_id}"
+                embed_url = f"https://www.youtube.com/embed/{video_id}"
+                
+                return {
+                    "video_id": video_id,
+                    "video_url": video_url,
+                    "embed_url": embed_url,
+                    "title": video_title,
+                    "thumbnail": thumbnail
+                }
+            except Exception as e:
+                # If API fails, fall back to the demo response
+                print(f"YouTube API error: {str(e)}. Using fallback.")
+        
+        # Fallback response for development or when API key is not available
+        video_id = "dQw4w9WgXcQ"  # Placeholder - use a real search in production
+        
+        return {
+            "video_id": video_id,
+            "video_url": f"https://www.youtube.com/watch?v={video_id}",
+            "embed_url": f"https://www.youtube.com/embed/{video_id}",
+            "title": f"{song_title} by {artist}",
+            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+            "note": "Using fallback mode - no YouTube API key provided or API error"
+        }
+    
+    except Exception as e:
+        print(f"Error in get_youtube_url: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run("api:app", host="127.0.0.1", port=8008, reload=True)

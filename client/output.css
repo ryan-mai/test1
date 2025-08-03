@@ -1879,15 +1879,15 @@ body {
 
 .bg-black {
   --tw-bg-opacity: 1;
-  background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
+  background-color: rgb(18 18 18 / var(--tw-bg-opacity, 1));
 }
 
 .bg-black\/30 {
-  background-color: rgb(0 0 0 / 0.3);
+  background-color: rgb(18 18 18  / 0.3);
 }
 
 .bg-black\/80 {
-  background-color: rgb(0 0 0 / 0.8);
+  background-color: rgb(18 18 18  / 0.8);
 }
 
 .bg-blue-500 {

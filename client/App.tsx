@@ -40,6 +40,7 @@ const App = () => {
                 <Route path="/home" element={<Home />} />
                 <Route path="/eeg-dataset" element={<EEGDataset />} />
                 <Route path="/preprocessing" element={<AnimatedPreprocessing />} />
+                <Route path="/animated-preprocessing" element={<AnimatedPreprocessing />} />
                 <Route path="/mental-state" element={<MentalState />} />
                 <Route path="/audio-retrieval" element={<AudioRetrieval />} />
                 <Route path="/library" element={<TimelineDemo />} />

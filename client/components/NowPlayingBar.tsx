@@ -28,7 +28,7 @@ export const NowPlayingBar: React.FC<NowPlayingBarProps> = ({ standalone = false
   } = useAudio();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black to-[#121212]/95 pt-4 pb-4 px-8">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#121212] pt-4 pb-4 px-8">
       <div className="flex justify-between items-center max-w-screen-2xl mx-auto">
         {/* Left: Song Info (placeholder) */}
         <div className="w-1/4 flex items-center gap-4">

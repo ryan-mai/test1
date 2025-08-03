@@ -32,7 +32,7 @@ const dailyMixes = [
         color: 'cyan',
         title: 'About',
         description: 'Learn more about the project',
-        path: '/about',
+        path: '/home',
         image: '/neurons.jpg',
     },
     {
@@ -41,7 +41,7 @@ const dailyMixes = [
         color: 'yellow',
         title: 'Processing',
         description: 'Process and analyze audio data',
-        path: '/preprocessing',
+        path: '/animatedpreprocessing',
         image: '/placeholder.svg',
     },
     {

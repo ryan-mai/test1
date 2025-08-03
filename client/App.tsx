@@ -18,6 +18,7 @@ import About from "./pages/About";
 import Index from "./pages/Index";
 import { SongProvider } from "./lib/SongContext";
 import { AudioProvider } from "./lib/AudioContext";
+import { BrainwaveProvider } from "./lib/BrainwaveContext";
 
 const queryClient = new QueryClient();
 
@@ -28,8 +29,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SongProvider>
-          <AudioProvider>
+        <BrainwaveProvider>
+          <SongProvider>
+            <AudioProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -50,6 +52,7 @@ const App = () => {
             </BrowserRouter>
           </AudioProvider>
         </SongProvider>
+      </BrainwaveProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

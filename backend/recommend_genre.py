@@ -3,16 +3,14 @@ import json
 import os
 from google import genai
 from google.genai import types
+from pathlib import Path
+from dotenv import load_dotenv
 
 def generate_genre(bpm, wave_data):
     # Load .env
-    try:
-        from dotenv import load_dotenv
-        load_dotenv('.env')
-    except ImportError:
-        pass
+    load_dotenv(Path(__file__).parent / ".env")
     
-    api_key = "AIzaSyCQySRJoHbyT9oP02Xes1fFa-nIdr6rr3s"
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print(json.dumps({"error": "No Gemini API key provided"}))
         return

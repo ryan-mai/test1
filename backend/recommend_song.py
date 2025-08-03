@@ -1,63 +1,47 @@
+from pathlib import Path
 import sys
 import json
 import os
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-def generate_song(bpm, genre):
-    # Load .env if present
-    try:
-        from dotenv import load_dotenv
-        load_dotenv('.env')
-    except ImportError:
-        pass
+def generate_songs(bpm, genre, num_songs=8):
+    load_dotenv(Path(__file__).parent / ".env")
     
-    api_key = "AIzaSyCQySRJoHbyT9oP02Xes1fFa-nIdr6rr3s"
-    
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print(json.dumps({"error": "No Gemini API key provided"}))
-        return
-    
+        return json.dumps({"error": "No Gemini API key"})
+
     client = genai.Client(api_key=api_key)
-    
     model = "gemini-2.5-flash-lite"
-    
+
     contents = [
         types.Content(
             role="user",
-            parts=[ 
+            parts=[
                 types.Part.from_text(text=f"""
-                Based on mainstream music trends, recommend ONE specific popular song 
-                that matches:
+                Recommend {num_songs} popular songs matching:
                 - BPM: {bpm}
                 - Genre: {genre}
 
-                Respond in this **exact JSON format** only:
+                Respond in **valid JSON** as:
                 {{
-                  "title": "[Song Title]",
-                  "artist": "[Artist Name]",
-                  "album": "[Album Name]",
-                  "bpm": {bpm},
-                  "genre": "{genre}"
+                  "songs": [
+                    {{"title": "...", "artist": "...", "album": "...", "bpm": {bpm}, "genre": "{genre}"}},
+                    ...
+                  ]
                 }}
-
-                Do NOT include any explanations or extra text. Output only valid JSON.
                 """),
             ],
         ),
     ]
-    
+
     try:
         response_text = ""
-        for chunk in client.models.generate_content_stream(
-            model=model,
-            contents=contents,
-        ):
+        for chunk in client.models.generate_content_stream(model=model, contents=contents):
             if chunk.text:
                 response_text += chunk.text.strip()
-        
-        # Return Gemini's JSON response directly
         return response_text
-    
     except Exception as e:
-        return json.dumps({"bpm": bpm, "error": str(e)})
+        return json.dumps({"error": str(e)})

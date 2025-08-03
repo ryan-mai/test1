@@ -12,7 +12,7 @@ from typing import List
 
 from backend.recommend_bpm import get_bpm_genre
 from backend.recommend_genre import generate_genre
-from backend.recommend_song import generate_song
+from backend.recommend_song import generate_songs
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -56,21 +56,18 @@ async def recommendation():
     except Exception as e:
         return {"error": str(e)}
     
-@app.get("/recommend_song")
-async def recommend_song():
+@app.get("/recommend_songs")
+async def recommend_songs():
     try:
-        # First, get BPM and genre (just like /recommendation)
         bpm, wave_data = get_bpm_genre(uploaded_file_path)
         genre_json = generate_genre(bpm, wave_data)
         genre = json.loads(genre_json).get("genre")
 
-        # Now get song recommendation
-        song_json = generate_song(bpm, genre)
-
+        songs_json = generate_songs(bpm, genre)
         return {
             "bpm": bpm,
             "genre": genre,
-            "song": json.loads(song_json) if song_json else {"error": "No song generated"}
+            "songs": json.loads(songs_json).get("songs", [])
         }
     except Exception as e:
         return {"error": str(e)}

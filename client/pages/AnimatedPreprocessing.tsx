@@ -47,7 +47,7 @@ export default function AnimatedPreprocessing() {
     if (typeof window !== 'undefined') {
       // Log GSAP registration status
       console.log('GSAP available:', typeof gsap !== 'undefined');
-
+      
       // Check for SplitText plugin
       try {
         const splitTextAvailable = typeof (window as any).GSAPSplitText !== 'undefined';
@@ -97,13 +97,13 @@ export default function AnimatedPreprocessing() {
   };
 
   // Access brainwave context
-  const {
-    brainwaveData,
-    updateBrainwaveData,
-    processingStatus,
-    statusMessage: contextStatusMessage,
-    setProcessingStatus,
-    setStatusMessage: setContextStatusMessage
+  const { 
+    brainwaveData, 
+    updateBrainwaveData, 
+    processingStatus, 
+    statusMessage: contextStatusMessage, 
+    setProcessingStatus, 
+    setStatusMessage: setContextStatusMessage 
   } = useBrainwave();
 
   const toggleArtist = (artist: string) => {
@@ -164,7 +164,7 @@ export default function AnimatedPreprocessing() {
   // });
 
   // const [bpm, setBpm] = useState<number | null>(null);
-
+  
   // Use data from context
   const [bandPowers, setBandPowers] = useState({
     delta: 0,
@@ -185,7 +185,7 @@ export default function AnimatedPreprocessing() {
     link?: string;
     imageUrl?: string;
   }> | null>(null);
-
+  
   // YouTube video state
   const [selectedSong, setSelectedSong] = useState<{
     title?: string;
@@ -294,7 +294,7 @@ export default function AnimatedPreprocessing() {
     setUploadStatus("loading");
     setStatusMessage("Uploading your EEG data...");
     // Update file details status to show uploading
-    setFileDetails(prev => prev ? { ...prev, status: 'Uploading...' } : null);
+    setFileDetails(prev => prev ? {...prev, status: 'Uploading...'} : null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -306,7 +306,7 @@ export default function AnimatedPreprocessing() {
       setUploadStatus("success");
       setStatusMessage(`File uploaded: ${data.filename}`);
       // Update file details status to show success
-      setFileDetails(prev => prev ? { ...prev, status: 'Upload successful' } : null);
+      setFileDetails(prev => prev ? {...prev, status: 'Upload successful'} : null);
 
       // Immediately get BPM + genre (but not song)
       setStatusMessage("Analyzing EEG for BPM & genre...");
@@ -325,7 +325,7 @@ export default function AnimatedPreprocessing() {
         bpm: recRes.data.bpm,
         genre: recRes.data.genre
       };
-
+      
       // Update local state
       setBandPowers({
         delta: brainwaveValues.delta,
@@ -334,11 +334,11 @@ export default function AnimatedPreprocessing() {
         beta: brainwaveValues.beta,
         gamma: brainwaveValues.gamma,
       });
-
+      
       // Update BPM & Genre in UI
       setBpm(brainwaveValues.bpm);
       setSongResult(`Recommended genre: ${brainwaveValues.genre}`);
-
+      
       // Update the shared context
       updateBrainwaveData(brainwaveValues);
       setProcessingStatus("success");
@@ -350,7 +350,7 @@ export default function AnimatedPreprocessing() {
       setProcessingStatus("error");
       setContextStatusMessage(`Brain activity processing failed: ${err.message}`);
       // Update file details status to show failure
-      setFileDetails(prev => prev ? { ...prev, status: 'Upload failed' } : null);
+      setFileDetails(prev => prev ? {...prev, status: 'Upload failed'} : null);
     }
   };
 
@@ -387,7 +387,7 @@ export default function AnimatedPreprocessing() {
     // setBpm(null);
     setSongResult("");
     setSongList([]);
-
+    
     // Update brainwave context status
     setProcessingStatus("loading");
     setContextStatusMessage("Processing EEG data...");
@@ -400,13 +400,13 @@ export default function AnimatedPreprocessing() {
 
       const bpmValue = response.data.bpm;
       const genreValue = response.data.genre;
-
+      
       // Only update BPM if we actually got a new value
       if (bpmValue) {
         setBpm(bpmValue);
       }
       setSongResult(`Recommended genre: ${genreValue}`);
-
+      
       // Update the brainwave context with processed data
       updateBrainwaveData({
         // Only update BPM if we got a new value, otherwise keep the existing one
@@ -434,49 +434,49 @@ export default function AnimatedPreprocessing() {
       console.error("Error:", error);
       setUploadStatus("error");
       setStatusMessage(`Error: ${error instanceof Error ? error.message : "Failed to fetch songs"}`);
-
+      
       // Update brainwave context with error
       setProcessingStatus("error");
       setContextStatusMessage(`Error processing brain activity: ${error instanceof Error ? error.message : "Failed to process"}`);
     }
   };
-
+  
   // Function to fetch YouTube URL for a song
   const fetchYoutubeUrl = async (song: { title?: string; artist?: string }) => {
     if (!song.title || !song.artist) {
       setYoutubeData({ error: "Missing song title or artist" });
       return;
     }
-
+    
     setYoutubeData({ loading: true });
     setSelectedSong(song);
-
+    
     try {
       const response = await api.post("/api/get_youtube_url", {
         title: song.title,
         artist: song.artist
       });
-
+      
       if (response.data.error) {
-        setYoutubeData({
+        setYoutubeData({ 
           error: response.data.error,
-          loading: false
+          loading: false 
         });
         return;
       }
-
+      
       setYoutubeData({
         video_id: response.data.video_id,
         embed_url: response.data.embed_url,
         thumbnail: response.data.thumbnail,
         loading: false
       });
-
+      
     } catch (error) {
       console.error("Error fetching YouTube URL:", error);
-      setYoutubeData({
+      setYoutubeData({ 
         error: error instanceof Error ? error.message : "Failed to fetch YouTube URL",
-        loading: false
+        loading: false 
       });
     }
   };
@@ -484,10 +484,10 @@ export default function AnimatedPreprocessing() {
   // Render status alert - now only for processing status, not file upload status
   const renderStatusAlert = () => {
     // Skip showing upload-related alerts since they're now in the file details
-    if (uploadStatus === "idle" || !statusMessage ||
-      statusMessage.includes("Upload") ||
-      statusMessage.includes("upload") ||
-      statusMessage.includes("File uploaded")) return null;
+    if (uploadStatus === "idle" || !statusMessage || 
+        statusMessage.includes("Upload") || 
+        statusMessage.includes("upload") ||
+        statusMessage.includes("File uploaded")) return null;
 
     if (uploadStatus === "error") {
       return (
@@ -522,6 +522,17 @@ export default function AnimatedPreprocessing() {
 
   const maxPower = Math.max(...Object.values(bandPowers));
 
+  const openSongLink = (song: { title?: string; artist?: string; link?: string }) => {
+  if (song.link) {
+    // Open the provided link
+    window.open(song.link, "_blank", "noopener,noreferrer");
+  } else if (song.title && song.artist) {
+    // Fallback: Search YouTube if no link
+    const query = encodeURIComponent(`${song.title} ${song.artist}`);
+    window.open(`https://www.youtube.com/results?search_query=${query}`, "_blank", "noopener,noreferrer");
+  }
+};
+
   const timelineData = [
     {
       title: "Upload",
@@ -548,23 +559,24 @@ export default function AnimatedPreprocessing() {
           {fileDetails && (
             <div className="rounded-lg bg-muted p-4 mb-4 relative">
               <h3 className="font-medium mb-2">File Details</h3>
-
+              
               <div className="relative">
                 {/* Main file name with rounded borders - extends full width */}
                 <div className="bg-neutral-800 rounded-full pr-4 py-2 flex items-center text-white mb-2 w-full border-2 border-neutral-800">
                   <span className="font-medium truncate pl-4 flex-1">{fileDetails.name}</span>
-
+                  
                   {/* Status pill positioned within the same row as filename */}
-                  <div className={`rounded-full px-3 py-2 flex items-center ml-2 z-10 ${fileDetails.status === 'Ready to upload'
+                  <div className={`rounded-full px-3 py-2 flex items-center ml-2 z-10 ${
+                    fileDetails.status === 'Ready to upload' 
                       ? 'bg-neutral-700 text-white'
-                      : fileDetails.status === 'Uploading...'
-                        ? 'bg-yellow-400 text-yellow-900 animate-pulse'
-                        : fileDetails.status === 'Upload successful'
-                          ? 'bg-[#1DB954] text-black'
-                          : fileDetails.status === 'Upload failed'
-                            ? 'bg-red-700 text-white'
-                            : 'bg-neutral-800 text-white'
-                    }`}>
+                      : fileDetails.status === 'Uploading...' 
+                      ? 'bg-yellow-400 text-yellow-900 animate-pulse'
+                      : fileDetails.status === 'Upload successful' 
+                      ? 'bg-[#1DB954] text-black'
+                      : fileDetails.status === 'Upload failed' 
+                      ? 'bg-red-700 text-white'
+                      : 'bg-neutral-800 text-white'
+                  }`}>
                     <span className="font-medium text-sm">
                       {fileDetails.status}
                       {fileDetails.status === 'Uploading...' && (
@@ -585,7 +597,7 @@ export default function AnimatedPreprocessing() {
                     </span>
                   </div>
                 </div>
-
+                
                 {/* Size text at bottom right with smaller text */}
                 <div className="flex justify-end mt-1">
                   <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
@@ -661,31 +673,31 @@ export default function AnimatedPreprocessing() {
               </Card>
 
               <Card className="shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05)]">
-                <CardHeader className="relative flex items-center h-32 p-0 overflow-hidden">
-                  {/* Centered, full-size Heart SVG background */}
-                  <svg
-                    viewBox="0 0 100 90"
-                    className="absolute w-full h-full max-w-[100px] pointer-events-none select-none"
-                    style={{ zIndex: 0, display: 'block', top: '40%', right: '5.5rem', position: 'absolute', transform: 'translateY(-50%)' }}
-                    preserveAspectRatio="xMidYMid meet"
-                  >
-                    <path
-                      d="M10,30
+                  <CardHeader className="relative flex items-center h-32 p-0 overflow-hidden">
+                    {/* Centered, full-size Heart SVG background */}
+                    <svg
+                      viewBox="0 0 100 90"
+                      className="absolute w-full h-full max-w-[100px] pointer-events-none select-none"
+                      style={{ zIndex: 0, display: 'block', top: '40%', right: '5.5rem', position: 'absolute', transform: 'translateY(-50%)' }}
+                      preserveAspectRatio="xMidYMid meet"
+                    >
+                      <path
+                        d="M10,30
                           a20,20 0 0,1 40,0
                           a20,20 0 0,1 40,0
                           q0,30 -40,50
                           q-40,-20 -40,-50z"
-                      fill="#fb233b"
-                    />
-                  </svg>
-                  <CardTitle className="relative flex items-start justify-start w-full h-full text-[5rem] font-extrabold leading-none tracking-tight text-primary text-left pl-8 mt-6 z-10">BPM</CardTitle>
-                </CardHeader>
-                {/* BPM value moved below the CardHeader */}
-                {bpm !== null && (
-                  <div className="flex justify-start pl-8 mt-[-3.5rem]">
-                    <span className="text-[8rem] md:text-[15rem] font-thin leading-none text-primary text-left" style={{ lineHeight: 1 }}>{bpm}</span>
-                  </div>
-                )}
+                        fill="#fb233b"
+                      />
+                    </svg>
+                    <CardTitle className="relative flex items-start justify-start w-full h-full text-[5rem] font-extrabold leading-none tracking-tight text-primary text-left pl-8 mt-6 z-10">BPM</CardTitle>
+                  </CardHeader>
+                  {/* BPM value moved below the CardHeader */}
+                  {bpm !== null && (
+                    <div className="flex justify-start pl-8 mt-[-3.5rem]">
+                      <span className="text-[8rem] md:text-[15rem] font-thin leading-none text-primary text-left" style={{lineHeight:1}}>{bpm}</span>
+                    </div>
+                  )}
               </Card>
             </div>
 
@@ -759,85 +771,83 @@ export default function AnimatedPreprocessing() {
                 const gradientClass = gradients[index % gradients.length];
 
                 return (
-                  <ScrollStackItem key={index} itemClassName={`${gradientClass} text-white shadow-lg rounded-[40px] overflow-hidden relative`}>
-                    {/* Add an overlay pattern for visual interest */}
-                    <a
-                      href={song.link || `https://www.youtube.com/results?search_query=${encodeURIComponent(song.title + " " + song.artist)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block h-full p-6 flex flex-col justify-between hover:opacity-90 transition-opacity"
-                    ></a>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-50 mix-blend-overlay"></div>
-                    {/* Main content */}
-                    <div className="h-full p-6 flex flex-col justify-between relative z-10">
-                      <div className="flex w-full">
-                        {/* Album/Song Image - Placeholder if no image available */}
-                        <div className="w-24 h-24 rounded-xl overflow-hidden mr-5 flex-shrink-0 bg-black/20 relative">
-                          <div className="absolute top-2 right-2 bg-black/40 px-2 py-1 rounded text-xs text-gray-300 font-semibold z-10">
-                            {song.album || "Unknown"}
-                          </div>
-                          <img
-                            src={song.imageUrl || "/musicplayer.jpeg"}
-                            alt={song.title || `Song ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex flex-1 items-center justify-between overflow-hidden max-w-[calc(100%-110px)]">
-                          <div className="flex flex-col justify-center overflow-hidden">
-                            <span className="font-extrabold text-black dark:text-white truncate"
-                              style={{
-                                fontSize: `${song.title && song.title.length > 15 ? '1.8rem' : '2.5rem'}`,
-                                lineHeight: '1',
-                                height: '2.5rem',
-                                display: 'block',
-                                width: '100%',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis'
-                              }}>
-                              {song.title || `Song ${index + 1}`}
-                            </span>
-                            <span className="flex items-center gap-2 mt-2 overflow-hidden" style={{ height: '1.5rem' }}>
-                              <span className="text-neutral-700 dark:text-neutral-200 truncate"
-                                style={{
-                                  fontSize: `${song.artist && song.artist.length > 20 ? '1rem' : '1.5rem'}`,
-                                  lineHeight: '1',
-                                  fontWeight: 400,
-                                  width: '100%',
-                                  whiteSpace: 'nowrap',
-                                  textOverflow: 'ellipsis'
-                                }}>
-                                {song.artist || "Unknown Artist"}
-                              </span>
-                              {song.genre && (
-                                <span className="px-2 py-0.5 rounded-full text-sm md:text-base font-bold text-white/90 flex-shrink-0"
-                                  style={{ background: '#1DB954', color: '#fff', marginLeft: '0.5rem' }}>
-                                  {song.genre}
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                          {/* Play button with hover effect on the same row as text */}
-                          <button
-                            className="group relative rounded-full w-14 h-14 bg-white hover:bg-white/90 text-black flex items-center justify-center shadow-lg transform transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 ml-4"
-                            onClick={() => {
-                              // Fetch YouTube URL for this song
-                              fetchYoutubeUrl({
-                                title: song.title,
-                                artist: song.artist
-                              });
-                            }}
-                          >
-                            <Youtube className="h-6 w-6 transition-transform group-hover:scale-110" />
-                            <span className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </ScrollStackItem>
+
+<ScrollStackItem 
+  key={index} 
+  itemClassName={`${gradientClass} text-white shadow-lg rounded-[40px] overflow-hidden relative`}
+>
+  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-50 mix-blend-overlay"></div>
+  <div className="h-full p-6 flex flex-col justify-between relative z-10">
+    <div className="flex w-full">
+      <div className="w-24 h-24 rounded-xl overflow-hidden mr-5 flex-shrink-0 bg-black/20 relative">
+        <div className="absolute top-2 right-2 bg-black/40 px-2 py-1 rounded text-xs text-gray-300 font-semibold z-10">
+          {song.album || "Unknown"}
+        </div>
+        <img 
+          src={song.imageUrl || "/musicplayer.jpeg"} 
+          alt={song.title || `Song ${index + 1}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      <div className="flex flex-1 items-center justify-between overflow-hidden max-w-[calc(100%-110px)]">
+        <div className="flex flex-col justify-center overflow-hidden">
+          {/* Make title clickable */}
+          <a 
+  onClick={() => openSongLink(song)}
+  className="cursor-pointer font-extrabold text-black dark:text-white truncate hover:underline"
+  style={{
+    fontSize: `${song.title && song.title.length > 15 ? '1.8rem' : '2.5rem'}`,
+    lineHeight: '1',
+    height: '2.5rem',
+    display: 'block',
+    width: '100%',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis'
+  }}
+>
+  {song.title || `Song ${index + 1}`}
+</a>
+          <span className="flex items-center gap-2 mt-2 overflow-hidden" style={{height: '1.5rem'}}>
+            <span className="text-neutral-700 dark:text-neutral-200 truncate" 
+              style={{
+                fontSize: `${song.artist && song.artist.length > 20 ? '1rem' : '1.5rem'}`, 
+                lineHeight: '1', 
+                fontWeight: 400,
+                width: '100%',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {song.artist || "Unknown Artist"}
+            </span>
+            {song.genre && (
+              <span className="px-2 py-0.5 rounded-full text-sm md:text-base font-bold text-white/90 flex-shrink-0" 
+                style={{background: '#1DB954', color: '#fff', marginLeft: '0.5rem'}}>
+                {song.genre}
+              </span>
+            )}
+          </span>
+        </div>
+
+        {/* Keep YouTube button as is */}
+        <button 
+          className="group relative rounded-full w-14 h-14 bg-white hover:bg-white/90 text-black flex items-center justify-center shadow-lg transform transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 ml-4"
+          onClick={() => openSongLink(song)}
+
+        >
+          <Youtube className="h-6 w-6 transition-transform group-hover:scale-110" />
+          <span className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</ScrollStackItem>
+
                 );
               })}
             </ScrollStack>
-
+            
             {/* YouTube Video Player */}
             {selectedSong && (
               <div className="mt-8 max-w-4xl mx-auto">
@@ -848,9 +858,9 @@ export default function AnimatedPreprocessing() {
                         <Youtube className="h-5 w-5 text-red-600" />
                         {selectedSong.title} by {selectedSong.artist}
                       </CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
                         className="bg-neutral-800 hover:bg-neutral-700 border-neutral-700"
                         onClick={() => {
                           setSelectedSong(null);
@@ -870,7 +880,7 @@ export default function AnimatedPreprocessing() {
                         </div>
                       </div>
                     )}
-
+                    
                     {youtubeData?.error && (
                       <div className="h-96 flex items-center justify-center bg-neutral-950">
                         <div className="flex flex-col items-center max-w-md text-center px-4">
@@ -880,7 +890,7 @@ export default function AnimatedPreprocessing() {
                         </div>
                       </div>
                     )}
-
+                    
                     {youtubeData?.embed_url && (
                       <div className="aspect-video w-full">
                         <iframe
@@ -991,8 +1001,8 @@ export default function AnimatedPreprocessing() {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start">
             <div className="w-full md:w-3/5 py-10 px-4 md:px-6 lg:px-8 z-10">
               <div className="block text-6xl mb-2 text-left font-bold text-neutral-900 dark:text-white">
-                <SplitText
-                  text="Process Data"
+                <SplitText 
+                  text="Process Data" 
                   splitType="chars"
                   delay={50}
                   duration={0.8}
@@ -1009,8 +1019,8 @@ export default function AnimatedPreprocessing() {
             </div>
             <div className="w-full md:w-2/5 md:-mt-28 absolute md:relative" style={{ bottom: '2rem', right: '12rem' }}>
 
-              <MacbookScroll
-                src="/demo.gif"
+              <MacbookScroll 
+                src="/demo.gif" 
                 showGradient={true}
                 title=""
               />

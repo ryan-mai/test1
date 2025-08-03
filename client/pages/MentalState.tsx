@@ -101,7 +101,7 @@ export default function MentalState() {
       return () => {
         clearInterval(interval);
         // Stop the session when recording stops
-        fetch('http://localhost:8000/api/session/stop', {
+        fetch('http://localhost:8008/api/session/stop', {
           method: 'POST',
         }).catch(console.error);
       };

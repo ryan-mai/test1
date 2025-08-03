@@ -3,6 +3,10 @@ import asyncio
 import base64
 import io
 import traceback
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 import cv2
 import pyaudio
@@ -41,8 +45,8 @@ CONFIG = types.LiveConnectConfig(
         )
     ),
     context_window_compression=types.ContextWindowCompressionConfig(
-        trigger_tokens=25600,
-        sliding_window=types.SlidingWindow(target_tokens=12800),
+        trigger_tokens=8000,  # Lowered from 25600
+        sliding_window=types.SlidingWindow(target_tokens=4000),  # Lowered from 12800
     ),
 )
 
@@ -52,30 +56,45 @@ pya = pyaudio.PyAudio()
 class AudioLoop:
     def __init__(self, video_mode=DEFAULT_MODE):
         self.video_mode = video_mode
-
         self.audio_in_queue = None
         self.out_queue = None
-
         self.session = None
-
         self.send_text_task = None
         self.receive_audio_task = None
         self.play_audio_task = None
+        self._should_stop = False
 
     SYSTEM_PROMPT = (
-        "You are a healthcare professional. "
-        "Analyze the user's facial expressions, speech content, and tone of voice for any signs of distress, mental health conditions, or stress. "
-        "If you detect any such signs, respond with your observations and possible recommendations. "
-        "Otherwise, continue to monitor and provide supportive feedback."
+        "You are a healthcare professional. Briefly analyze the user's expressions, speech, and tone for distress or mental health issues. If detected, give concise observations and recommendations. Otherwise, provide brief supportive feedback."
     )
 
+    def stop(self):
+        self._should_stop = True
+        # Attempt to close audio stream if exists
+        if hasattr(self, 'audio_stream') and self.audio_stream:
+            try:
+                self.audio_stream.close()
+            except Exception:
+                pass
+        # Optionally, put None in queues to unblock
+        if self.audio_in_queue:
+            try:
+                self.audio_in_queue.put_nowait(None)
+            except Exception:
+                pass
+        if self.out_queue:
+            try:
+                self.out_queue.put_nowait(None)
+            except Exception:
+                pass
+
     async def send_text(self):
-        while True:
+        while not self._should_stop:
             text = await asyncio.to_thread(
                 input,
                 "message > ",
             )
-            if text.lower() == "q":
+            if text.lower() == "q" or self._should_stop:
                 break
             # Prepend system prompt to user input
             prompt = f"{self.SYSTEM_PROMPT}\nUser: {text or '.'}"
@@ -103,22 +122,15 @@ class AudioLoop:
         return {"mime_type": mime_type, "data": base64.b64encode(image_bytes).decode()}
 
     async def get_frames(self):
-        # This takes about a second, and will block the whole program
-        # causing the audio pipeline to overflow if you don't to_thread it.
         cap = await asyncio.to_thread(
             cv2.VideoCapture, 0
-        )  # 0 represents the default camera
-
-        while True:
+        )
+        while not self._should_stop:
             frame = await asyncio.to_thread(self._get_frame, cap)
-            if frame is None:
+            if frame is None or self._should_stop:
                 break
-
-            await asyncio.sleep(1.0)
-
+            await asyncio.sleep(3.0)
             await self.out_queue.put(frame)
-
-        # Release the VideoCapture object
         cap.release()
 
     def _get_screen(self):
@@ -139,19 +151,18 @@ class AudioLoop:
         return {"mime_type": mime_type, "data": base64.b64encode(image_bytes).decode()}
 
     async def get_screen(self):
-
-        while True:
+        while not self._should_stop:
             frame = await asyncio.to_thread(self._get_screen)
-            if frame is None:
+            if frame is None or self._should_stop:
                 break
-
-            await asyncio.sleep(1.0)
-
+            await asyncio.sleep(3.0)
             await self.out_queue.put(frame)
 
     async def send_realtime(self):
-        while True:
+        while not self._should_stop:
             msg = await self.out_queue.get()
+            if msg is None or self._should_stop:
+                break
             if isinstance(msg, dict):
                 await self.session.send(input=msg)
             else:
@@ -173,27 +184,29 @@ class AudioLoop:
             kwargs = {"exception_on_overflow": False}
         else:
             kwargs = {}
-        while True:
+        while not self._should_stop:
             data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, **kwargs)
+            if self._should_stop:
+                break
             await self.out_queue.put({"data": data, "mime_type": "audio/pcm"})
 
     async def receive_audio(self):
         "Background task to reads from the websocket and write pcm chunks to the output queue"
-        while True:
+        while not self._should_stop:
             turn = self.session.receive()
             async for response in turn:
+                if self._should_stop:
+                    break
                 if data := response.data:
                     self.audio_in_queue.put_nowait(data)
                     continue
                 if text := response.text:
                     print(text, end="")
 
-            # If you interrupt the model, it sends a turn_complete.
-            # For interruptions to work, we need to stop playback.
-            # So empty out the audio queue because it may have loaded
-            # much more audio than has played yet.
             while not self.audio_in_queue.empty():
                 self.audio_in_queue.get_nowait()
+            if self._should_stop:
+                break
 
     async def play_audio(self):
         stream = await asyncio.to_thread(
@@ -203,8 +216,10 @@ class AudioLoop:
             rate=RECEIVE_SAMPLE_RATE,
             output=True,
         )
-        while True:
+        while not self._should_stop:
             bytestream = await self.audio_in_queue.get()
+            if bytestream is None or self._should_stop:
+                break
             await asyncio.to_thread(stream.write, bytestream)
 
     async def run(self):

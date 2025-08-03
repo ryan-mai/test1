@@ -25,7 +25,7 @@ The system consists of two main parts:
 - Node.js and npm installed
 - Google Gemini API key
 
-### Backend Setup
+### Environment Setup
 
 1. Set up your environment variable for the Gemini API key:
 
@@ -39,30 +39,18 @@ The system consists of two main parts:
    pip install fastapi uvicorn google-generativeai opencv-python pillow pyaudio mss
    ```
 
-3. Run the FastAPI backend:
+### Running the Application
 
-   ```bash
-   cd backend
-   python api.py
-   ```
+The application is now fully integrated with the main server. Simply run:
 
-   The API will be available at http://localhost:8008
+```bash
+npm run dev
+```
 
-### Frontend Setup
+This will start both the React frontend and the Python backend using concurrently.
 
-1. Install the required npm packages:
-
-   ```bash
-   npm install
-   ```
-
-2. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The frontend will be available at the URL shown in your terminal (typically http://localhost:3000 or http://localhost:5173)
+- The API will be available at http://localhost:8008
+- The frontend will be available at the URL shown in your terminal (typically http://localhost:3000 or http://localhost:5173)
 
 ## Using the Application
 

@@ -33,16 +33,16 @@ export default function Home() {
           <NavbarLogo />
           <NavItems 
             items={[ 
-              { name: "Music", link: "/music-recommendation" },
-              { name: "Mental State", link: "/mental-state" },
-              { name: "Library", link: "/library" },
-              { name: "About", link: "/about" }
+              { name: "Home", link: "/" },
+              { name: "Diagnose", link: "/animated-preprocessing" },
+              { name: "Dashboard", link: "/mental-state" },
+              { name: "About", link: "/home" }
             ]} 
           />
           <div className="relative z-20 flex items-center gap-4">
-          <NavbarButton variant="primary" as="a" href="/login" style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}>
-            Log in
-          </NavbarButton>
+            <NavbarButton variant="primary" as="a" href="/login">
+              Log in
+            </NavbarButton>
           </div>
         </NavBody>
 
@@ -64,10 +64,10 @@ export default function Home() {
             onClose={() => setIsMobileMenuOpen(false)}
           >
             {[
-              { name: "Music", link: "/music-recommendation" },
-              { name: "Mental State", link: "/mental-state" },
-              { name: "Library", link: "/library" },
-              { name: "About", link: "/about" }
+              { name: "Home", link: "/" },
+              { name: "Diagnose", link: "/animated-preprocessing" },
+              { name: "Dashboard", link: "/mental-state" },
+              { name: "About", link: "/home" }
             ].map((item, idx) => (
               <a
                 key={`mobile-link-${idx}`}
@@ -85,7 +85,6 @@ export default function Home() {
                 as="a"
                 href="/login"
                 className="w-full"
-                style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}
               >
                 Log in
               </NavbarButton>
@@ -95,7 +94,6 @@ export default function Home() {
                 as="a"
                 href="/login"
                 className="w-full"
-                style={{ backgroundColor: '#1DB954', borderColor: '#1DB954', color: '#fff' }}
               >
                 Log in
               </NavbarButton>
@@ -289,12 +287,7 @@ export default function Home() {
       </footer>
 
       {/* Now Playing Bar */}
-      <NowPlayingBar
-        isPlaying={false}
-        currentTime={0}
-        duration={0}
-        volume={1}
-      />
+      <NowPlayingBar />
     </div>
   );
 }

@@ -14,6 +14,8 @@ interface AudioContextType {
   currentTime: number;
   duration: number;
   volume: number;
+  repeat: boolean;
+  isMuted: boolean;
   progressBarRef: React.RefObject<HTMLDivElement>;
   songTitle: string;
   artist: string;
@@ -22,6 +24,8 @@ interface AudioContextType {
   togglePlay: () => void;
   seek: (time: number) => void;
   setVolume: (level: number) => void;
+  toggleRepeat: () => void;
+  toggleMute: () => void;
   formatTime: (time: number) => string;
   handleProgressBarClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   handleVolumeBarClick: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -35,14 +39,18 @@ const AudioContext = createContext<AudioContextType>({
   currentTime: 0,
   duration: 0,
   volume: 0.75,
+  repeat: false,
+  isMuted: false,
   progressBarRef: { current: null },
-  songTitle: 'Test Song',
-  artist: 'Demo Artist',
-  albumCoverUrl: '/placeholder.svg',
+  songTitle: 'Oh yea its Symph',
+  artist: 'R.J.H.',
+  albumCoverUrl: '/musicplayer.jpg',
   songUrl: '/merry.mp3',
   togglePlay: () => {},
   seek: () => {},
   setVolume: () => {},
+  toggleRepeat: () => {},
+  toggleMute: () => {},
   formatTime: () => '0:00',
   handleProgressBarClick: () => {},
   handleVolumeBarClick: () => {},
@@ -58,11 +66,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.75);
+  const [repeat, setRepeat] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [previousVolume, setPreviousVolume] = useState(0.75); // Store previous volume for unmuting
   
   // Track metadata (could be expanded to load from an API)
-  const [songTitle, setSongTitle] = useState('Test Song');
-  const [artist, setArtist] = useState('Demo Artist');
-  const [albumCoverUrl, setAlbumCoverUrl] = useState('/placeholder.svg');
+  const [songTitle, setSongTitle] = useState('Hey, Symph');
+  const [artist, setArtist] = useState('R.J.H.');
+  const [albumCoverUrl, setAlbumCoverUrl] = useState('/musicplayer.jpeg');
   const [songUrl, setSongUrl] = useState('/merry.mp3');
 
   // Initialize audio element
@@ -78,11 +89,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const onPause = () => setIsPlaying(false);
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration || 0);
+    const onEnded = () => {
+      if (repeat) {
+        audio.currentTime = 0;
+        audio.play().catch(err => console.error("Error replaying audio:", err));
+      } else {
+        setIsPlaying(false);
+      }
+    };
     
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('ended', onEnded);
     
     // Cleanup
     return () => {
@@ -90,8 +110,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audio.removeEventListener('pause', onPause);
       audio.removeEventListener('timeupdate', onTimeUpdate);
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('ended', onEnded);
     };
-  }, []);
+  }, [repeat]);
 
   // Initialize or change the current song
   const initializeSong = (songInfo: SongInfo) => {
@@ -172,6 +193,31 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setVolumeState(newVolume);
   };
 
+  // Toggle repeat mode
+  const toggleRepeat = () => {
+    setRepeat(!repeat);
+  };
+
+  // Toggle mute
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    
+    if (isMuted) {
+      // Unmute - restore previous volume
+      audioRef.current.volume = previousVolume;
+      audioRef.current.muted = false;
+      setVolumeState(previousVolume);
+    } else {
+      // Mute - save current volume first
+      setPreviousVolume(volume);
+      audioRef.current.volume = 0;
+      audioRef.current.muted = true;
+      setVolumeState(0);
+    }
+    
+    setIsMuted(!isMuted);
+  };
+
   // Format time in mm:ss
   const formatTime = (time: number) => {
     if (isNaN(time)) return '0:00';
@@ -211,6 +257,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentTime,
     duration,
     volume,
+    repeat,
+    isMuted,
     progressBarRef,
     songTitle,
     artist,
@@ -219,6 +267,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     togglePlay,
     seek,
     setVolume,
+    toggleRepeat,
+    toggleMute,
     formatTime,
     handleProgressBarClick,
     handleVolumeBarClick,

@@ -10,14 +10,86 @@ const Index = () => {
   const location = useLocation();
   // Use the global audio context
 
+  // State for search input and suggestions
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const [suggestions, setSuggestions] = React.useState([]);
+  const searchRef = React.useRef(null);
+
   // Get current song info from context
   const { initializeSong, songUrl } = useAudio();
+  
+  // Available navigation options
+  const navigationOptions = [
+    { title: 'Home', path: '/home' },
+    { title: 'About', path: '/about' },
+    { title: 'Dashboard', path: '/mental-state' },
+    { title: 'Login', path: '/login' },
+    { title: 'Processing', path: '/animated-preprocessing' }
+  ];
   
   // Check if current path is one of the allowed pages for search
   const isSearchEnabled = () => {
     const allowedPaths = ['/', '/home', '/about', '/mental-state', '/login'];
     return allowedPaths.includes(location.pathname);
   };
+  
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    if (value.trim() === '') {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    // Filter options that match the search term
+    const filteredOptions = navigationOptions.filter(option => 
+      option.title.toLowerCase().includes(value.toLowerCase())
+    );
+    
+    setSuggestions(filteredOptions);
+    setShowSuggestions(true);
+  };
+  
+  // Handle keyboard navigation in the suggestions dropdown
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    
+    // If Enter key is pressed and we have suggestions, navigate to the first suggestion
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSuggestionClick(suggestions[0].path);
+    }
+    
+    // If Escape key is pressed, close the suggestions
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  };
+  
+  // Handle selection of a suggestion
+  const handleSuggestionClick = (path) => {
+    navigate(path);
+    setSearchTerm('');
+    setShowSuggestions(false);
+  };
+  
+  // Close suggestions when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   
   // Only initialize the default song if not already set
@@ -108,7 +180,7 @@ const dailyMixes = [
             >
               <FaHome size={36} />
             </button>
-            <div className="flex items-center rounded-full bg-[#2A2A2A] px-6 py-4 w-[340px]">
+            <div className="flex items-center rounded-full bg-[#2A2A2A] px-6 py-4 w-[340px] relative" ref={searchRef}>
               <FaSearch className="text-[#B3B3B3] mr-4" size={24} />
               <input
                 type="text"
@@ -116,7 +188,26 @@ const dailyMixes = [
                 className={`bg-transparent border-none outline-none w-full text-lg ${isSearchEnabled() ? 'text-[#B3B3B3]' : 'text-[#666666] cursor-not-allowed'}`}
                 disabled={!isSearchEnabled()}
                 title={!isSearchEnabled() ? "Search is only available on Home, About, Dashboard, and Login pages" : ""}
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onKeyDown={handleKeyDown}
+                onFocus={() => searchTerm.trim() !== '' && setShowSuggestions(true)}
               />
+              
+              {/* Dropdown Suggestions */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-[#2A2A2A] rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  {suggestions.map((option, index) => (
+                    <div 
+                      key={index}
+                      className="px-6 py-3 text-[#B3B3B3] hover:bg-[#383838] cursor-pointer flex items-center"
+                      onClick={() => handleSuggestionClick(option.path)}
+                    >
+                      {option.title}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

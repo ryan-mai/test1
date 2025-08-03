@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { gsap } from "gsap";
 import { Timeline } from "@/components/timeline";
-import { Button } from "@/components/ui/button";
+import { Button as BaseButton } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { NowPlayingBar } from "@/components/NowPlayingBar";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { MacbookScroll } from "@/components/macbook-scroll";
-import SplitText from "@/components/SplitText";
 import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube, ArrowDown, ChevronUp } from "lucide-react";
 import {
   Navbar,
@@ -23,11 +21,13 @@ import {
 } from "@/components/resizable-navbar";
 import api from "@/api";
 
-// Extend the Window interface to include GSAPSplitText
-declare global {
-  interface Window {
-    GSAPSplitText?: any;
-  }
+// Define Song interface
+interface Song {
+  title?: string;
+  artist?: string;
+  album?: string;
+  bpm?: number;
+  genre?: string;
 }
 
 export default function AnimatedPreprocessing() {
@@ -38,25 +38,6 @@ export default function AnimatedPreprocessing() {
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<number>(0);
-  const [gsapLoaded, setGsapLoaded] = useState(false);
-
-  // Check if GSAP is loaded
-  useEffect(() => {
-    // Check if window is defined (for SSR)
-    if (typeof window !== 'undefined') {
-      // Log GSAP registration status
-      console.log('GSAP available:', typeof gsap !== 'undefined');
-      
-      // Check for SplitText plugin
-      try {
-        const splitTextAvailable = typeof (window as any).GSAPSplitText !== 'undefined';
-        console.log('SplitText plugin available:', splitTextAvailable);
-        setGsapLoaded(true);
-      } catch (error) {
-        console.error('Error checking SplitText plugin:', error);
-      }
-    }
-  }, []);
 
   const [processingOptions, setProcessingOptions] = useState({
     applyFilter: true,
@@ -154,13 +135,7 @@ export default function AnimatedPreprocessing() {
 
   const [bpm, setBpm] = useState<number | null>(null);
   const [songResult, setSongResult] = useState<string>("");
-  const [songList, setSongList] = useState<Array<{
-    title?: string;
-    artist?: string;
-    album?: string;
-    bpm?: number;
-    genre?: string;
-  }> | null>(null);
+  const [songList, setSongList] = useState<Song[]>([]);
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -254,10 +229,7 @@ export default function AnimatedPreprocessing() {
   const handleUpload = async () => {
     if (!file) return; // safety check
 
-    setUploadStatus("loading");
     setStatusMessage("Uploading your EEG data...");
-    // Update file details status to show uploading
-    setFileDetails(prev => prev ? {...prev, status: 'Uploading...'} : null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -266,10 +238,7 @@ export default function AnimatedPreprocessing() {
       const { data } = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setUploadStatus("success");
       setStatusMessage(`File uploaded: ${data.filename}`);
-      // Update file details status to show success
-      setFileDetails(prev => prev ? {...prev, status: 'Upload successful'} : null);
 
       // Immediately get BPM + genre (but not song)
       setStatusMessage("Analyzing EEG for BPM & genre...");
@@ -290,16 +259,16 @@ export default function AnimatedPreprocessing() {
       // Update BPM & Genre in UI
       setBpm(recRes.data.bpm);
       setSongResult(`Recommended genre: ${recRes.data.genre}`);
+      setUploadStatus("success");
 
-    } catch (err) {
-      setUploadStatus("error");
+      return data; // Return promise to the stateful button
+
+    } catch (err: any) {
       setStatusMessage(`Upload failed: ${err.message}`);
-      // Update file details status to show failure
-      setFileDetails(prev => prev ? {...prev, status: 'Upload failed'} : null);
+      setUploadStatus("error");
+      throw err; // Throw error to trigger stateful button error state
     }
   };
-
-
 
   // Reset the form
   const handleReset = () => {
@@ -314,7 +283,6 @@ export default function AnimatedPreprocessing() {
 
   // Start preprocessing
   const handleStartPreprocessing = async () => {
-    setUploadStatus("loading");
     setStatusMessage("Processing EEG data...");
     setBpm(null);
     setSongResult("");
@@ -334,8 +302,8 @@ export default function AnimatedPreprocessing() {
         setSongList(response.data.songs);
       }
 
-      setUploadStatus("success");
       setStatusMessage("Song recommendations ready!");
+      setUploadStatus("success");
 
       // Scroll to results
       setActiveSection(2);
@@ -343,20 +311,19 @@ export default function AnimatedPreprocessing() {
         resultsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
 
-    } catch (error) {
+      return response.data; // Return promise to the stateful button
+
+    } catch (error: any) {
       console.error("Error:", error);
-      setUploadStatus("error");
       setStatusMessage(`Error: ${error instanceof Error ? error.message : "Failed to fetch songs"}`);
+      setUploadStatus("error");
+      throw error; // Throw error to trigger stateful button error state
     }
   };
 
-  // Render status alert - now only for processing status, not file upload status
+  // Render status alert
   const renderStatusAlert = () => {
-    // Skip showing upload-related alerts since they're now in the file details
-    if (uploadStatus === "idle" || !statusMessage || 
-        statusMessage.includes("Upload") || 
-        statusMessage.includes("upload") ||
-        statusMessage.includes("File uploaded")) return null;
+    if (!statusMessage) return null;
 
     if (uploadStatus === "error") {
       return (
@@ -378,15 +345,12 @@ export default function AnimatedPreprocessing() {
       );
     }
 
-    if (uploadStatus === "loading") {
-      return (
-        <Alert className="mt-4 bg-blue-50 border-blue-200 text-blue-800">
-          <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
-          <AlertTitle>Processing</AlertTitle>
-          <AlertDescription>{statusMessage}</AlertDescription>
-        </Alert>
-      );
-    }
+    return (
+      <Alert className="mt-4 bg-blue-50 border-blue-200 text-blue-800">
+        <AlertTitle>Status</AlertTitle>
+        <AlertDescription>{statusMessage}</AlertDescription>
+      </Alert>
+    );
   };
 
   const maxPower = Math.max(...Object.values(bandPowers));
@@ -396,6 +360,10 @@ export default function AnimatedPreprocessing() {
       title: "Upload",
       content: (
         <div ref={uploadSectionRef}>
+          <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
+            Select and upload your EEG data files for preprocessing and analysis.
+          </p>
+
           <div
             className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-black/2 transition-colors cursor-pointer mb-4"
             onClick={() => fileInputRef.current?.click()}>
@@ -415,82 +383,53 @@ export default function AnimatedPreprocessing() {
           </div>
 
           {fileDetails && (
-            <div className="rounded-lg bg-muted p-4 mb-4 relative">
+            <div className="rounded-lg bg-muted p-4 mb-4">
               <h3 className="font-medium mb-2">File Details</h3>
-              
-              <div className="relative">
-                {/* Main file name with rounded borders - extends full width */}
-                <div className="bg-neutral-800 rounded-full pr-4 py-2 flex items-center text-white mb-2 w-full border-2 border-neutral-800">
-                  <span className="font-medium truncate pl-4 flex-1">{fileDetails.name}</span>
-                  
-                  {/* Status pill positioned within the same row as filename */}
-                  <div className={`rounded-full px-3 py-2 flex items-center ml-2 z-10 ${
-                    fileDetails.status === 'Ready to upload' 
-                      ? 'bg-neutral-700 text-white'
-                      : fileDetails.status === 'Uploading...' 
-                      ? 'bg-blue-900 text-blue-100 animate-pulse'
-                      : fileDetails.status === 'Upload successful' 
-                      ? 'bg-[#1DB954] text-black'
-                      : fileDetails.status === 'Upload failed' 
-                      ? 'bg-red-700 text-white'
-                      : 'bg-neutral-800 text-white'
-                  }`}>
-                    <span className="font-medium text-sm">
-                      {fileDetails.status}
-                      {fileDetails.status === 'Uploading...' && (
-                        <span className="inline-block ml-1">
-                          <RefreshCw className="h-3 w-3 inline animate-spin" />
-                        </span>
-                      )}
-                      {fileDetails.status === 'Upload successful' && (
-                        <span className="inline-block ml-1">
-                          <CheckCircle2 className="h-6 w-6 inline" />
-                        </span>
-                      )}
-                      {fileDetails.status === 'Upload failed' && (
-                        <span className="inline-block ml-1">
-                          <AlertCircle className="h-6 w-6 inline" />
-                        </span>
-                      )}
-                    </span>
-                  </div>
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Filename</p>
+                  <p className="font-medium truncate">{fileDetails.name}</p>
                 </div>
-                
-                {/* Size text at bottom right with smaller text */}
-                <div className="flex justify-end mt-1">
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                    {fileDetails.size}
-                  </span>
+                <div>
+                  <p className="text-muted-foreground">Size</p>
+                  <p className="font-medium">{fileDetails.size}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Status</p>
+                  <p className="font-medium">{fileDetails.status}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="flex justify-end -mt-6">
-            <div className="flex flex-col md:flex-row gap-4 mt-6">
-              <Button variant="outline" onClick={handleReset} className="w-full md:w-auto">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-              <Button
-                onClick={handleUpload}
-                disabled={!file || uploadStatus === "loading"}
-                className="w-full md:w-auto"
-              >
-                {uploadStatus === "loading" ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <FileUp className="h-4 w-4 mr-2" />
-                    Upload
-                  </>
-                )}
-              </Button>
-            </div>
+          {renderStatusAlert()}
+
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
+            <BaseButton variant="outline" onClick={handleReset} className="w-full md:w-auto">
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </BaseButton>
+            <BaseButton
+              onClick={handleUpload}
+              disabled={!file}
+              className="w-full md:w-auto bg-green-500 hover:bg-green-600"
+            >
+              <FileUp className="h-4 w-4 mr-2" />
+              Upload
+            </BaseButton>
           </div>
+
+          {uploadStatus === "success" && (
+            <div className="mt-8 flex justify-center">
+              <BaseButton
+                variant="outline"
+                onClick={() => scrollToSection(processSectionRef, 1)}
+                className="flex items-center gap-2"
+              >
+                Continue to Processing <ArrowDown className="h-4 w-4 rotate-90" />
+              </BaseButton>
+            </div>
+          )}
         </div>
       ),
     },
@@ -499,6 +438,9 @@ export default function AnimatedPreprocessing() {
       content: (
         <div ref={processSectionRef}>
           {/* Wrap all content in a single parent div */}
+          <p className="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
+            View your brain activity patterns and personalized music recommendations based on your EEG data.
+          </p>
           <div>
             {/* Music Preferences Section with Scroll Stack */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -518,11 +460,9 @@ export default function AnimatedPreprocessing() {
                         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"
-
                             style={{
                               width: power > 0 ? `${(power / maxPower) * 100}%` : "0%"
                             }}
-
                           />
                         </div>
                       </div>
@@ -532,7 +472,7 @@ export default function AnimatedPreprocessing() {
               </Card>
 
               <Card className="shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05)]">
-                <CardHeader>Recommendation
+                <CardHeader>
                   <CardTitle className="text-lg">Music Genre</CardTitle>
                   <CardDescription>Based on your brain activity</CardDescription>
                 </CardHeader>
@@ -561,40 +501,40 @@ export default function AnimatedPreprocessing() {
             {/* Apply Preferences Button */}
             {(selectedGenres.length > 0 || selectedYears.length > 0 || selectedArtists.length > 0 || selectedMoods.length > 0) && (
               <div className="mt-4 flex justify-center">
-                <Button
+                <BaseButton
                   className="bg-[#1DB954] hover:bg-[#1DB954]/80 text-black"
                   onClick={() => {
                     // This would call the API with user preferences to update recommendations
-                    setStatusMessage("Updating recommendations based on your preferences...");
-                    setUploadStatus("loading");
-
                     // Simulate API call
-                    setTimeout(() => {
-                      setUploadStatus("success");
-                      setStatusMessage("Recommendations updated based on your preferences!");
-                      setSongResult(`Based on your brain activity (${bpm} BPM) and preferences, we found this song for you.`);
-                    }, 1500);
+                    return new Promise((resolve) => {
+                      setTimeout(() => {
+                        setStatusMessage("Recommendations updated based on your preferences!");
+                        setSongResult(`Based on your brain activity (${bpm} BPM) and preferences, we found this song for you.`);
+                        resolve();
+                      }, 1500);
+                    });
                   }}
                 >
                   Apply Preferences
-                </Button>
+                </BaseButton>
               </div>
             )}
 
-            <div className="flex justify-end mt-6">
-              <Button onClick={handleStartPreprocessing} disabled={uploadStatus === "loading"}>
-                {uploadStatus === "loading" ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Process
-                  </>
-                )}
-              </Button>
+            <div className="flex justify-between mt-6">
+              <BaseButton
+                variant="outline"
+                onClick={() => scrollToSection(uploadSectionRef, 0)}
+                className="flex items-center gap-2"
+              >
+                <ArrowDown className="h-4 w-4 -rotate-90" /> Back to Upload
+              </BaseButton>
+              <BaseButton 
+                onClick={handleStartPreprocessing}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Start Processing
+              </BaseButton>
             </div>
           </div>
         </div>
@@ -604,7 +544,10 @@ export default function AnimatedPreprocessing() {
       title: "Results",
       content: (
         <div ref={resultsSectionRef}>
-
+          <h2 className="text-xl font-semibold mb-4">Music Preferences</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Fine-tune your music recommendations by selecting preferences from categories below or add your own.
+          </p>
           <div className="h-[400px] w-full mt-[-10px]">
             <ScrollStack
               key={songList ? songList.length : 0} // force re-layout when songs change
@@ -617,15 +560,14 @@ export default function AnimatedPreprocessing() {
               stackPosition="5%"
               scaleEndPosition="10%"
             >
-
-              {/* Genre Category */}
-              {songList && songList.length > 0 && songList.slice(0, 4).map((song, index) => {
+              {songList.length > 0 && songList.slice(0, 4).map((song, index) => {
                 const gradients = [
                   "bg-gradient-to-br from-[#7CF9A7] via-[#1DB954] to-[#23272A]",
                   "bg-gradient-to-br from-[#A6A1FF] via-[#450CF5] to-[#23272A]",
                   "bg-gradient-to-br from-[#FFB3DE] via-[#E4128B] to-[#23272A]",
                   "bg-gradient-to-br from-[#FFD699] via-[#FF9500] to-[#23272A]"
                 ];
+                
                 const gradientClass = gradients[index % gradients.length];
 
                 return (
@@ -641,10 +583,8 @@ export default function AnimatedPreprocessing() {
                   </ScrollStackItem>
                 );
               })}
-
             </ScrollStack>
           </div>
-
         </div>
       ),
     },
@@ -724,7 +664,7 @@ export default function AnimatedPreprocessing() {
                 href="/login"
                 className="w-full"
               >
-                Log in
+                Sign up
               </NavbarButton>
             </div>
           </MobileNavMenu>
@@ -737,25 +677,14 @@ export default function AnimatedPreprocessing() {
         <div className="relative w-full bg-white dark:bg-neutral-950">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start">
             <div className="w-full md:w-3/5 py-10 px-4 md:px-6 lg:px-8 z-10">
-              <div className="block text-6xl mb-2 text-left font-bold text-neutral-900 dark:text-white">
-                <SplitText 
-                  text="Process Data" 
-                  splitType="chars"
-                  delay={50}
-                  duration={0.8}
-                  from={{ opacity: 0, y: 30, rotateX: -90 }}
-                  to={{ opacity: 1, y: 0, rotateX: 0 }}
-                  ease="power4.out"
-                  textAlign="left"
-                  className="text-6xl font-bold"
-                />
-              </div>
+              <h1 className="block text-6xl mb-2 text-left font-bold text-neutral-900 dark:text-white">
+                Process Data
+              </h1>
               <p className="text-neutral-700 dark:text-neutral-300 text-sm md:text-base max-w-sm mb-0">
                 Submit your patient's data to be scanned and analyzed. The entire process takes less than 1 minute.
               </p>
             </div>
             <div className="w-full md:w-2/5 md:-mt-28 absolute md:relative" style={{ bottom: '2rem', right: '12rem' }}>
-
               <MacbookScroll 
                 src="/demo.gif" 
                 showGradient={true}
@@ -767,7 +696,7 @@ export default function AnimatedPreprocessing() {
 
         {/* Timeline Component */}
         <div className="relative w-full mt-[-180px] md:mt-[-500px]">
-          <Timeline data={timelineData} hideHeader={true} activeIndex={activeSection} />
+          <Timeline data={timelineData} hideHeader={true} />
         </div>
       </div>
 

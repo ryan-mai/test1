@@ -1,6 +1,6 @@
 import React from "react";
 import { BiShuffle, BiSkipPrevious, BiSkipNext, BiRepeat } from "react-icons/bi";
-import { FaPlay, FaVolumeUp } from "react-icons/fa";
+import { FaPlay, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { MdPause, MdQueueMusic } from "react-icons/md";
 import { CgScreen } from "react-icons/cg";
 import { useAudio } from "../lib/AudioContext";
@@ -17,8 +17,12 @@ export const NowPlayingBar: React.FC<NowPlayingBarProps> = ({ standalone = false
     currentTime,
     duration,
     volume,
+    repeat,
+    isMuted,
     progressBarRef,
     togglePlay,
+    toggleRepeat,
+    toggleMute,
     formatTime,
     handleProgressBarClick,
     handleVolumeBarClick,
@@ -57,7 +61,12 @@ export const NowPlayingBar: React.FC<NowPlayingBarProps> = ({ standalone = false
               )}
             </button>
             <BiSkipNext className="text-[#B3B3B3] hover:text-white cursor-pointer" size={32} />
-            <BiRepeat className="text-[#B3B3B3] hover:text-white cursor-pointer" size={22} />
+            <BiRepeat 
+              className={`${repeat ? 'text-green-500' : 'text-[#B3B3B3]'} hover:text-${repeat ? 'green-500' : 'white'} cursor-pointer`} 
+              size={22} 
+              onClick={toggleRepeat}
+              title={repeat ? "Repeat is on" : "Repeat is off"}
+            />
           </div>
           <div className="w-full flex items-center gap-2 select-none">
             <span className="text-xs text-[#B3B3B3] min-w-[40px] text-right">{formatTime(currentTime)}</span>
@@ -86,10 +95,21 @@ export const NowPlayingBar: React.FC<NowPlayingBarProps> = ({ standalone = false
         
         {/* Right: Volume Controls */}
         <div className="w-1/4 flex items-center justify-end gap-4">
-          <CgScreen className="text-[#B3B3B3] hover:text-white cursor-pointer" size={20} />
-          <MdQueueMusic className="text-[#B3B3B3] hover:text-white cursor-pointer" size={20} />
-          <div className="flex items-center gap-2">
-            <FaVolumeUp className="text-[#B3B3B3] hover:text-white cursor-pointer" size={20} />
+            {isMuted || volume === 0 ? (
+              <FaVolumeMute 
+                className="text-[#B3B3B3] hover:text-white cursor-pointer" 
+                size={20} 
+                onClick={toggleMute}
+                title="Unmute"
+              />
+            ) : (
+              <FaVolumeUp 
+                className="text-[#B3B3B3] hover:text-white cursor-pointer" 
+                size={20} 
+                onClick={toggleMute}
+                title="Mute"
+              />
+            )}
             <div
               className="w-24 h-1.5 bg-[#404040] rounded-full cursor-pointer relative group"
               onClick={handleVolumeBarClick}
@@ -106,18 +126,10 @@ export const NowPlayingBar: React.FC<NowPlayingBarProps> = ({ standalone = false
                 <div className="w-3 h-3 bg-white rounded-full shadow border border-[#404040] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
               </div>
             </div>
+              <CgScreen className="text-[#B3B3B3] hover:text-white cursor-pointer" size={20} />
+              <MdQueueMusic className="text-[#B3B3B3] hover:text-white cursor-pointer" size={20} />
+            <div className="flex items-center gap-2">
           </div>
-          <button className="text-[#B3B3B3] hover:text-white">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M1.5 1H6v1.5H3v10h10v-3H14.5v4.5h-14V1.5z M8 4H16v8H8V4zm6.5 6.5v-5h-5v5h5z"></path>
-            </svg>
-          </button>
-          <button className="text-[#B3B3B3] hover:text-white">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M16 3v10H0V3h16zM1 4v8h14V4H1z"></path>
-              <path d="M10 12h4V4h-4v8zm1-7h2v6h-2V5z"></path>
-            </svg>
-          </button>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-def get_bpm_genre():
-    df = pd.read_csv("backend/assets/output.csv")
+def get_bpm_genre(uploaded_file_path):
+    df = pd.read_csv(uploaded_file_path)
 
     # Extract relative powers for all channels
     alpha_cols = [col for col in df.columns if "alpha_rel_power" in col]

@@ -9,7 +9,7 @@ import { NowPlayingBar } from "@/components/NowPlayingBar";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { MacbookScroll } from "@/components/macbook-scroll";
 import SplitText from "@/components/SplitText";
-import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube, ArrowDown, ChevronUp } from "lucide-react";
+import { Brain, FileUp, FileDown, Play, RotateCcw, CheckCircle2, AlertCircle, Filter, RefreshCw, BarChart4, Music, Youtube, ArrowDown, ChevronUp, X as CloseIcon } from "lucide-react";
 import {
   Navbar,
   NavBody,
@@ -867,7 +867,7 @@ export default function AnimatedPreprocessing() {
                           setYoutubeData(null);
                         }}
                       >
-                        <X className="h-4 w-4" />
+                        <CloseIcon className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardHeader>
